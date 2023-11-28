@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
-package boboyuks.SignUpPage;
+package boboyuks.Authentication.SignUpPage;
 
 import com.sun.jdi.connect.spi.Connection;
 import java.security.MessageDigest;
@@ -117,7 +117,7 @@ public class SignUp extends javax.swing.JFrame {
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
-                .addContainerGap(158, Short.MAX_VALUE)
+                .addContainerGap(160, Short.MAX_VALUE)
                 .addComponent(jLabel1)
                 .addGap(131, 131, 131))
             .addGroup(jPanel3Layout.createSequentialGroup()
@@ -224,7 +224,7 @@ public class SignUp extends javax.swing.JFrame {
         SUrl = "jdbc:MYSQL://localhost:3306/boboyuks";
         SUser = "root";
         SPass = "";
-        try{
+        try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             java.sql.Connection con = DriverManager.getConnection(SUrl, SUser, SPass);
             Statement st = con.createStatement();
@@ -248,7 +248,17 @@ public class SignUp extends javax.swing.JFrame {
                 emailAddress.setText("");
                 phoneNumber.setText("");
                 passwords.setText("");
-                showMessageDialog(null, "New Account Created successfully!");
+
+                // Tampilkan pesan dan buka halaman login
+                JOptionPane.showMessageDialog(null, "New Account Created successfully!");
+                this.dispose(); // Tutup jendela SignUp
+
+                // Buka halaman Login
+                java.awt.EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        new boboyuks.Authentication.LoginPage.Login().setVisible(true);
+                    }
+                });
             }
         } catch(Exception e) {
             System.out.println("Error!" + e.getMessage());
