@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
-package boboyuks;
+package boboyuks.SignUpPage;
 
 import com.sun.jdi.connect.spi.Connection;
 import java.sql.DriverManager;
