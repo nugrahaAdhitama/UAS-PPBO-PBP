@@ -5,12 +5,15 @@
 package boboyuks.SignUpPage;
 
 import com.sun.jdi.connect.spi.Connection;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import static javax.swing.JOptionPane.showMessageDialog;
+import static javax.swing.text.html.HTML.Attribute.ID;
 
 /**
  *
@@ -204,9 +207,19 @@ public class SignUp extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_phoneNumberActionPerformed
 
+    private String hashPassword(String password) throws NoSuchAlgorithmException {
+        MessageDigest md = MessageDigest.getInstance("SHA-256");
+        md.update(password.getBytes());
+        byte[] bytes = md.digest();
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < bytes.length; i++) {
+            sb.append(Integer.toString((bytes[i] & 0xff) + 0x100, 16).substring(1));
+        }
+        return sb.toString();
+    }
+    
     private void SignUpBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_SignUpBtnActionPerformed
-
-        String fullName, email, phone, password, query;
+ String fullName, email, phone, password, query;
         String SUrl, SUser, SPass;
         SUrl = "jdbc:MYSQL://localhost:3306/boboyuks";
         SUser = "root";
@@ -224,13 +237,12 @@ public class SignUp extends javax.swing.JFrame {
             }else if("".equals(passwords.getText())){
                 JOptionPane.showMessageDialog(new JFrame(), "Password is required", "Error", JOptionPane.ERROR_MESSAGE);
             }else{
-                fullName =fname.getText();
+                fullName = fname.getText();
                 email = emailAddress.getText();
                 phone = phoneNumber.getText();
-                password = passwords.getText();
-                System.out.println(password);
-                
-                query = "INSERT INTO user(`id_user`, `full_name`, `email`, `phone_number`, `password`)" + "VALUES ('"+ID+"', '"+fullName+"', '"+email+"', '"+phone+"', '"+password+"')";
+                password = hashPassword(passwords.getText());
+
+                query = "INSERT INTO user(`full_name`, `email`, `phone_number`, `password`)" + "VALUES ('"+fullName+"', '"+email+"', '"+phone+"', '"+password+"')";
                 st.execute(query);
                 fname.setText("");
                 emailAddress.setText("");
@@ -238,10 +250,9 @@ public class SignUp extends javax.swing.JFrame {
                 passwords.setText("");
                 showMessageDialog(null, "New Account Created successfully!");
             }
-        }catch(Exception e){
+        } catch(Exception e) {
             System.out.println("Error!" + e.getMessage());
         }
-        
     }//GEN-LAST:event_SignUpBtnActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
