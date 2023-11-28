@@ -1,7 +1,9 @@
 
-package boboyuks.loginPage;
+package boboyuks.Authentication.LoginPage;
 import boboyuks.Home;
 import com.sun.jdi.connect.spi.Connection;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -171,6 +173,17 @@ public class Login extends javax.swing.JFrame {
         
     }//GEN-LAST:event_jButton2ActionPerformed
 
+    private String hashPassword(String password) throws NoSuchAlgorithmException {
+        MessageDigest md = MessageDigest.getInstance("SHA-256");
+        md.update(password.getBytes());
+        byte[] bytes = md.digest();
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < bytes.length; i++) {
+            sb.append(Integer.toString((bytes[i] & 0xff) + 0x100, 16).substring(1));
+        }
+        return sb.toString();
+    }
+    
     private void LoginBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_LoginBtnActionPerformed
         // TODO add your handling code here:
         String Email, Password, query, passDb = null;
@@ -178,43 +191,47 @@ public class Login extends javax.swing.JFrame {
         SUrl = "jdbc:MYSQL://localhost:3306/boboyuks";
         SUser = "root";
         SPass = "";
-        int notFound = 0;
-        try{
+        try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             java.sql.Connection con = DriverManager.getConnection(SUrl, SUser, SPass);
             Statement st = con.createStatement();
             if("".equals(email.getText())){
                 JOptionPane.showMessageDialog(new JFrame(), "Email Address is required", "Error", JOptionPane.ERROR_MESSAGE);
-            }else if("".equals(password.getText())){
+            } else if("".equals(password.getText())){
                 JOptionPane.showMessageDialog(new JFrame(), "Password is required", "Error", JOptionPane.ERROR_MESSAGE);
-            }else{
+            } else {
                 Email = email.getText();
-                Password = password.getText();
-                
+                Password = hashPassword(password.getText());
+
                 query = "SELECT * FROM user WHERE email= '"+Email+"'";
                 ResultSet rs = st.executeQuery(query);
-                while(rs.next()){
+                if(rs.next()){
                     passDb = rs.getString("password");
-                    notFound = 1;
                 }
-                if(notFound == 1 && Password.equals(passDb)){
+                if(Password.equals(passDb)){
                     Home HomeFrame = new Home();
                     HomeFrame.setVisible(true);
                     HomeFrame.pack();
                     HomeFrame.setLocationRelativeTo(null);
                     this.dispose();
-                }else{
+                } else {
                     JOptionPane.showMessageDialog(new JFrame(), "Incorrect email or password", "Error", JOptionPane.ERROR_MESSAGE);
-                
                 }
                 password.setText("");
             }
-        }catch(Exception e){
+        } catch(Exception e) {
             System.out.println("Error!" + e.getMessage());
         }
-        
     }//GEN-LAST:event_LoginBtnActionPerformed
 
+    public static void main(String[] args) {
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                new Login().setVisible(true);
+            }
+        });
+    }
+    
     /**
      * @param args the command line arguments
      */
