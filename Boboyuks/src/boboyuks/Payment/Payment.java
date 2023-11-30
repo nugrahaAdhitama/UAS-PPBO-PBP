@@ -74,57 +74,32 @@ public class Payment extends javax.swing.JFrame {
             private void handlePaymentTimeout() {
                 try {
                     connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
-                    String updateQuery = "UPDATE payment SET status = 'TIME OUT' WHERE timestamp =";
-                    // Adjust the WHERE clause based on your table structure and conditions
-                    try (PreparedStatement preparedStatement = connection.prepareStatement(updateQuery)) {
+
+                    // Mengatur id_reservation secara manual (nanti diganti).
+                    int idReservation = 1;
+
+                    // Membuat query untuk memasukkan data ke tabel payment
+                    String insertQuery = "INSERT INTO payment (id_reservation, status, timestamp) VALUES (?, 'time out', NOW())";
+
+                    try (PreparedStatement preparedStatement = connection.prepareStatement(insertQuery)) {
+                        // Mengatur id_reservation
+                        preparedStatement.setInt(1, idReservation);
+
+                        // Eksekusi query
                         preparedStatement.executeUpdate();
+
+                        // Tampilkan pesan bahwa waktu pembayaran telah habis
+                        JOptionPane.showMessageDialog(null, "Payment Time Out!");
                     }
                 } catch (SQLException ex) {
                     ex.printStackTrace();
                     JOptionPane.showMessageDialog(null, "Error updating payment status: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                 } finally {
-                    // Close the connection in the finally block to ensure it's always closed
                     if (connection != null) {
                         try {
                             connection.close();
                         } catch (SQLException ex) {
                             ex.printStackTrace();
-                        }
-                    }
-                }
-            }
-            
-            public void handlePaymentPaid() {
-                if (timeRemaining > 0) {
-                    // The payment was made before the timer reached zero
-                    JOptionPane.showMessageDialog(Payment.this, "Payment Successful!", "Payment Status", JOptionPane.INFORMATION_MESSAGE);
-                } else {
-                    try {
-                        connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
-                        String updateQuery = "UPDATE payment SET status = 'PAID' WHERE your_condition_here";
-                        // Adjust the WHERE clause based on your table structure and conditions
-                        try (PreparedStatement preparedStatement = connection.prepareStatement(updateQuery)) {
-                            // If there are any parameters in the WHERE clause, set them accordingly
-                            // For example, if using a placeholder like "?", set the parameter like this:
-                            // preparedStatement.setXXX(parameterIndex, value);
-
-                            preparedStatement.executeUpdate();
-
-                            // Show success message to the user
-                            JOptionPane.showMessageDialog(Payment.this, "Payment Successful!", "Payment Status", JOptionPane.INFORMATION_MESSAGE);
-                        }
-                    } catch (SQLException ex) {
-                        ex.printStackTrace();
-                        // Handle the SQL exception (e.g., display an error message)
-                        JOptionPane.showMessageDialog(Payment.this, "Error updating payment status: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-                    } finally {
-                        // Close the connection in the finally block to ensure it's always closed
-                        if (connection != null) {
-                            try {
-                                connection.close();
-                            } catch (SQLException ex) {
-                                ex.printStackTrace();
-                            }
                         }
                     }
                 }
@@ -139,6 +114,38 @@ public class Payment extends javax.swing.JFrame {
             // Handle the connection error
         }
     }
+    
+    public void handlePaymentPaid(int idReservation) {
+                try {
+                    // Mengatur koneksi ke database
+                    connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+
+                    // Membuat query untuk memasukkan data ke tabel payment
+                    String insertQuery = "INSERT INTO payment (id_reservation, status, timestamp) VALUES (?, 'paid', NOW())";
+
+                    try (PreparedStatement preparedStatement = connection.prepareStatement(insertQuery)) {
+                        // Mengatur id_reservation
+                        preparedStatement.setInt(1, idReservation);
+
+                        // Eksekusi query
+                        preparedStatement.executeUpdate();
+
+                        // Tampilkan pesan sukses
+                        JOptionPane.showMessageDialog(null, "Payment Successfully Recorded!");
+                    }
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "Error recording payment: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                } finally {
+                    if (connection != null) {
+                        try {
+                            connection.close();
+                        } catch (SQLException ex) {
+                            ex.printStackTrace();
+                        }
+                    }
+                }
+            }
 
     public String getSelectedBank() {
         return selectedBank;
@@ -178,6 +185,11 @@ public class Payment extends javax.swing.JFrame {
         default:
             return Collections.emptyList();
     }
+ 
+}
+    
+Payment getPaymentInstance() {
+    return this;
 }
 
 
@@ -215,10 +227,10 @@ public class Payment extends javax.swing.JFrame {
         jLabel12 = new javax.swing.JLabel();
         jLabel13 = new javax.swing.JLabel();
         jLabel14 = new javax.swing.JLabel();
-        jLabel15 = new javax.swing.JLabel();
         jLabel16 = new javax.swing.JLabel();
         jLabel17 = new javax.swing.JLabel();
         jLabel18 = new javax.swing.JLabel();
+        jLabel19 = new javax.swing.JLabel();
         fixPayment = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -380,9 +392,6 @@ public class Payment extends javax.swing.JFrame {
         jLabel14.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
         jLabel14.setText("With Breakfast 2 pax");
 
-        jLabel15.setFont(new java.awt.Font("Eras Bold ITC", 1, 28)); // NOI18N
-        jLabel15.setText("Guest");
-
         jLabel16.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
         jLabel16.setText("Siti Markonah");
 
@@ -392,6 +401,9 @@ public class Payment extends javax.swing.JFrame {
         jLabel18.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
         jLabel18.setText("siti.markonal@gmail.com");
 
+        jLabel19.setFont(new java.awt.Font("Eras Bold ITC", 1, 28)); // NOI18N
+        jLabel19.setText("Guest");
+
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
@@ -399,6 +411,7 @@ public class Payment extends javax.swing.JFrame {
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addGap(17, 17, 17)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel19)
                     .addComponent(jLabel8)
                     .addComponent(jLabel9)
                     .addComponent(jLabel10)
@@ -406,7 +419,6 @@ public class Payment extends javax.swing.JFrame {
                     .addComponent(jLabel12)
                     .addComponent(jLabel13)
                     .addComponent(jLabel14)
-                    .addComponent(jLabel15)
                     .addComponent(jLabel16)
                     .addComponent(jLabel17)
                     .addComponent(jLabel18))
@@ -429,9 +441,9 @@ public class Payment extends javax.swing.JFrame {
                 .addComponent(jLabel13)
                 .addGap(18, 18, 18)
                 .addComponent(jLabel14)
-                .addGap(73, 73, 73)
-                .addComponent(jLabel15)
-                .addGap(18, 18, 18)
+                .addGap(79, 79, 79)
+                .addComponent(jLabel19)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jLabel16)
                 .addGap(18, 18, 18)
                 .addComponent(jLabel17)
@@ -519,17 +531,15 @@ public class Payment extends javax.swing.JFrame {
     private void fixPaymentActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fixPaymentActionPerformed
         // TODO add your handling code here:
         if (selectedBank != null) {
-        // Pass the appropriate random numbers based on the selected bank
             List<String> randomNumbers = getRandomNumbersForBank(selectedBank);
-            PaymentPopup paymentPopupFrame = new PaymentPopup(selectedBank, randomNumbers, BANK_NUMBERS);
+            PaymentPopup paymentPopupFrame = new PaymentPopup(selectedBank, randomNumbers, BANK_NUMBERS, this); // Kirim 'this' sebagai referensi Payment
             paymentPopupFrame.setVisible(true);
             paymentPopupFrame.pack();
             paymentPopupFrame.setLocationRelativeTo(null);
             this.dispose();
         } else {
-            // Display an error message or handle the case when no bank is selected
             System.out.println("Please select a bank first.");
-    }
+        }
     }//GEN-LAST:event_fixPaymentActionPerformed
 
     private void btnBCAActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBCAActionPerformed
@@ -616,10 +626,10 @@ public class Payment extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel14;
-    private javax.swing.JLabel jLabel15;
     private javax.swing.JLabel jLabel16;
     private javax.swing.JLabel jLabel17;
     private javax.swing.JLabel jLabel18;
+    private javax.swing.JLabel jLabel19;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -634,7 +644,4 @@ public class Payment extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane1;
     // End of variables declaration//GEN-END:variables
 
-    void handlePaymentPaid() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
 }

@@ -22,9 +22,10 @@ public class PaymentPopup extends javax.swing.JFrame {
         initComponents();
     }
 
-    PaymentPopup(String bankName, List<String> randomNumbers, String[] bankNumbers) {
+    PaymentPopup(String bankName, List<String> randomNumbers, String[] bankNumbers, Payment paymentInstance) {
         this();
         this.bankName = bankName;
+        this.paymentInstance = paymentInstance;
         setBankName(bankName);
         setVirtualAccountNumber(generateRandomDigits(), bankNumbers);
     }
@@ -174,10 +175,8 @@ public class PaymentPopup extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void finishBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_finishBtnActionPerformed
-        // TODO add your handling code here:
-        if (paymentInstance != null) {
-            paymentInstance.handlePaymentPaid();
-        }
+        int idReservation = 1; // Sesuaikan logika untuk mendapatkan ID reservasi yang sebenarnya
+        paymentInstance.handlePaymentPaid(idReservation);
     }//GEN-LAST:event_finishBtnActionPerformed
     
     
@@ -226,7 +225,4 @@ public class PaymentPopup extends javax.swing.JFrame {
     private javax.swing.JLabel numberVA;
     // End of variables declaration//GEN-END:variables
 
-    private void handlePaymentPaid() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
 }
