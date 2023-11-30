@@ -518,10 +518,14 @@ public class BookingHotel extends javax.swing.JFrame {
     } else {
         Date startDate = checkInDate.getDate();
         Date endDate = checkOutDate.getDate();
-        
-        String price = roomPrice.getText();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        String startDateString = dateFormat.format(startDate);
+        String endDateString = dateFormat.format(endDate);
+        String priceText = roomPrice.getText();
+        String numericPart = priceText.replaceAll("[^0-9]", "");
+        int price = Integer.parseInt(numericPart);
 
-        query = "INSERT INTO user(id_user, start_date, end_date, price, ts_created, ts_updated, ts_cancelled)" + " VALUES ('" + 4 + "', '" + startDate + "', '" + endDate + "', '" + price + "', '" + "2023-11-10 18:55:56" + "', '" + "2023-11-10 19:20:32" + "', '" + "2023-11-10 19:40:21" + "')";
+        query = "INSERT INTO reservation(`id_reservation` ,`id_user`, `start_date`, `end_date`, `price`, `ts_created`, `ts_updated`, `ts_cancelled`)" + " VALUES ('" + 4 + "', '" + 4 + "', '" + startDateString + "', '" + endDateString + "', '" + price + "', '" + "2023-11-10 18:55:56" + "', '" + "2023-11-10 19:20:32" + "', '" + "2023-11-10 19:40:21" + "')";
         st.execute(query);
         checkInDate.setDate(null);
         checkOutDate.setDate(null);
