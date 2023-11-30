@@ -7,6 +7,8 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import java.util.Date;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 
 /*
@@ -498,44 +500,49 @@ public class BookingHotel extends javax.swing.JFrame {
 
     private void reviewBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reviewBtnActionPerformed
         // TODO add your handling code here:
-        String query, userId;
-        String SUrl, SUser, SPass;
-        SUrl = "jdbc:MYSQL://localhost:3306/boboyuks";
-        SUser = "root";
-        SPass = "";
-        
-        try {
-    Class.forName("com.mysql.cj.jdbc.Driver");
-    java.sql.Connection con = DriverManager.getConnection(SUrl, SUser, SPass);
-    Statement st = con.createStatement();
+        String query;
+    String SUrl, SUser, SPass;
+    SUrl = "jdbc:MYSQL://localhost:3306/boboyuks";
+    SUser = "root";
+    SPass = "";
 
-    if(checkInDate.getDate() == null) {
-        JOptionPane.showMessageDialog(new JFrame(), "Check-in date is required", "Error", JOptionPane.ERROR_MESSAGE);
-    } else if(checkOutDate.getDate() == null) {
-        JOptionPane.showMessageDialog(new JFrame(), "Check-out date is required", "Error", JOptionPane.ERROR_MESSAGE);
-    } else if("".equals(roomPrice.getText())) {
-        JOptionPane.showMessageDialog(new JFrame(), "Room Price is required", "Error", JOptionPane.ERROR_MESSAGE);
-    } else {
-        Date startDate = checkInDate.getDate();
-        Date endDate = checkOutDate.getDate();
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        String startDateString = dateFormat.format(startDate);
-        String endDateString = dateFormat.format(endDate);
-        String priceText = roomPrice.getText();
-        String numericPart = priceText.replaceAll("[^0-9]", "");
-        int price = Integer.parseInt(numericPart);
+    try {
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        java.sql.Connection con = DriverManager.getConnection(SUrl, SUser, SPass);
+        Statement st = con.createStatement();
 
-        query = "INSERT INTO reservation(`id_reservation` ,`id_user`, `start_date`, `end_date`, `price`, `ts_created`, `ts_updated`, `ts_cancelled`)" + " VALUES ('" + 4 + "', '" + 4 + "', '" + startDateString + "', '" + endDateString + "', '" + price + "', '" + "2023-11-10 18:55:56" + "', '" + "2023-11-10 19:20:32" + "', '" + "2023-11-10 19:40:21" + "')";
-        st.execute(query);
-        checkInDate.setDate(null);
-        checkOutDate.setDate(null);
-        roomPrice.setText("");
+        if(checkInDate.getDate() == null) {
+            JOptionPane.showMessageDialog(new JFrame(), "Check-in date is required", "Error", JOptionPane.ERROR_MESSAGE);
+        } else if(checkOutDate.getDate() == null) {
+            JOptionPane.showMessageDialog(new JFrame(), "Check-out date is required", "Error", JOptionPane.ERROR_MESSAGE);
+        } else if("".equals(roomPrice.getText())) {
+            JOptionPane.showMessageDialog(new JFrame(), "Room Price is required", "Error", JOptionPane.ERROR_MESSAGE);
+        } else {
+            Date startDate = checkInDate.getDate();
+            Date endDate = checkOutDate.getDate();
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+            String startDateString = dateFormat.format(startDate);
+            String endDateString = dateFormat.format(endDate);
+            String priceText = roomPrice.getText();
+            String numericPart = priceText.replaceAll("[^0-9]", "");
+            int price = Integer.parseInt(numericPart);
 
-        JOptionPane.showMessageDialog(null, "Reservation Added!");
+            // Menggunakan LocalDateTime untuk mendapatkan timestamp saat ini
+            LocalDateTime now = LocalDateTime.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            String currentTimestamp = now.format(formatter);
+
+            query = "INSERT INTO reservation(`id_reservation`, `id_user`, `start_date`, `end_date`, `price`, `ts_created`, `ts_updated`, `ts_cancelled`)" + " VALUES ('" + 5 + "', '" + 4 + "', '" + startDateString + "', '" + endDateString + "', '" + price + "', '" + currentTimestamp + "', '" + currentTimestamp + "', '" + currentTimestamp + "')";
+            st.execute(query);
+            checkInDate.setDate(null);
+            checkOutDate.setDate(null);
+            roomPrice.setText("");
+
+            JOptionPane.showMessageDialog(null, "Reservation Added!");
+        }
+    } catch (Exception e) {
+        System.out.println("Error!" + e.getMessage());
     }
-} catch (Exception e) {
-    System.out.println("Error!" + e.getMessage());
-}
 
     }//GEN-LAST:event_reviewBtnActionPerformed
 
