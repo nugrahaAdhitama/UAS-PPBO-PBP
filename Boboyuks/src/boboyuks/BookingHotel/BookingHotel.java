@@ -532,7 +532,8 @@ public class BookingHotel extends javax.swing.JFrame {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
             String currentTimestamp = now.format(formatter);
 
-            query = "INSERT INTO reservation(`id_reservation`, `id_user`, `start_date`, `end_date`, `price`, `ts_created`, `ts_updated`, `ts_cancelled`)" + " VALUES ('" + 5 + "', '" + 4 + "', '" + startDateString + "', '" + endDateString + "', '" + price + "', '" + currentTimestamp + "', '" + currentTimestamp + "', '" + currentTimestamp + "')";
+            query = "INSERT INTO reservation(`id_user`, `start_date`, `end_date`, `price`, `ts_created`, `ts_updated`, `ts_cancelled`)" + " VALUES ('" + 4 + "', '" + startDateString + "', '" + endDateString + "', '" + price + "', '" + currentTimestamp + "', '" + currentTimestamp + "', '" + currentTimestamp + "')";
+
             st.execute(query);
             checkInDate.setDate(null);
             checkOutDate.setDate(null);
