@@ -6,6 +6,7 @@ package boboyuks.Payment;
 
 import java.util.List;
 import java.util.Random;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -13,6 +14,7 @@ import java.util.Random;
  */
 public class PaymentPopup extends javax.swing.JFrame {
     private String bankName;
+    private Payment paymentInstance;
     /**
      * Creates new form PaymentPopup
      */
@@ -57,10 +59,13 @@ public class PaymentPopup extends javax.swing.JFrame {
 
     
     private String generateRandomDigits() {
-    Random random = new Random();
-    return String.format("%010d", random.nextInt(1000000000));
-}
-
+        Random random = new Random();
+        return String.format("%010d", random.nextInt(1000000000));
+    }
+    
+    public void setPaymentInstance(Payment paymentInstance) {
+        this.paymentInstance = paymentInstance;
+    }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -78,7 +83,7 @@ public class PaymentPopup extends javax.swing.JFrame {
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         numberVA = new javax.swing.JLabel();
-        jButton1 = new javax.swing.JButton();
+        finishBtn = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -99,10 +104,15 @@ public class PaymentPopup extends javax.swing.JFrame {
         numberVA.setFont(new java.awt.Font("Eras Bold ITC", 1, 35)); // NOI18N
         numberVA.setText("XXXXXXXXXXXXX");
 
-        jButton1.setBackground(new java.awt.Color(89, 185, 255));
-        jButton1.setFont(new java.awt.Font("Eras Bold ITC", 1, 30)); // NOI18N
-        jButton1.setForeground(new java.awt.Color(255, 255, 255));
-        jButton1.setText("I FINISHED THE PAYMENT");
+        finishBtn.setBackground(new java.awt.Color(89, 185, 255));
+        finishBtn.setFont(new java.awt.Font("Eras Bold ITC", 1, 30)); // NOI18N
+        finishBtn.setForeground(new java.awt.Color(255, 255, 255));
+        finishBtn.setText("I FINISHED THE PAYMENT");
+        finishBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                finishBtnActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -123,7 +133,7 @@ public class PaymentPopup extends javax.swing.JFrame {
                             .addComponent(jLabel4)))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGap(148, 148, 148)
-                        .addComponent(jButton1))
+                        .addComponent(finishBtn))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGap(24, 24, 24)
                         .addComponent(numberVA)))
@@ -143,7 +153,7 @@ public class PaymentPopup extends javax.swing.JFrame {
                 .addGap(18, 18, 18)
                 .addComponent(jLabel3)
                 .addGap(100, 100, 100)
-                .addComponent(jButton1)
+                .addComponent(finishBtn)
                 .addContainerGap(134, Short.MAX_VALUE))
         );
 
@@ -162,6 +172,13 @@ public class PaymentPopup extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void finishBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_finishBtnActionPerformed
+        // TODO add your handling code here:
+        if (paymentInstance != null) {
+            paymentInstance.handlePaymentPaid();
+        }
+    }//GEN-LAST:event_finishBtnActionPerformed
     
     
     /**
@@ -201,11 +218,15 @@ public class PaymentPopup extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel choosenBank;
-    private javax.swing.JButton jButton1;
+    private javax.swing.JButton finishBtn;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JLabel numberVA;
     // End of variables declaration//GEN-END:variables
+
+    private void handlePaymentPaid() {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
 }

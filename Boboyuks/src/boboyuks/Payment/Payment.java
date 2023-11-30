@@ -11,6 +11,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.PreparedStatement;
+import javax.swing.JOptionPane;
+
+
 
 /**
  *
@@ -31,6 +38,12 @@ public class Payment extends javax.swing.JFrame {
     private List<String> randomNumbersBRI;
     private List<String> randomNumbersBSI;
     
+    private static final String DB_URL = "jdbc:mysql://localhost:3306/boboyuks";
+    private static final String DB_USER = "root";
+    private static final String DB_PASSWORD = "";
+    
+    private Connection connection;
+    
     /**
      * Creates new form Payment
      */
@@ -46,19 +59,85 @@ public class Payment extends javax.swing.JFrame {
                 updateTimerLabel();
                 if (timeRemaining == 0) {
                     timer.stop();
-                    // Add any additional logic when the timer reaches 0
+                    handlePaymentTimeout(); // Call the method when the timer reaches 0
                 }
             }
 
             private void updateTimerLabel() {
                 cdLabel.setText(format(timeRemaining / 60) + ":" + format(timeRemaining % 60));
             }
-
+            
             private String format(int i) {
                 return (i < 10) ? "0" + i : String.valueOf(i);
             }
+            
+            private void handlePaymentTimeout() {
+                try {
+                    connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+                    String updateQuery = "UPDATE payment SET status = 'TIME OUT' WHERE timestamp =";
+                    // Adjust the WHERE clause based on your table structure and conditions
+                    try (PreparedStatement preparedStatement = connection.prepareStatement(updateQuery)) {
+                        preparedStatement.executeUpdate();
+                    }
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "Error updating payment status: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                } finally {
+                    // Close the connection in the finally block to ensure it's always closed
+                    if (connection != null) {
+                        try {
+                            connection.close();
+                        } catch (SQLException ex) {
+                            ex.printStackTrace();
+                        }
+                    }
+                }
+            }
+            
+            public void handlePaymentPaid() {
+                if (timeRemaining > 0) {
+                    // The payment was made before the timer reached zero
+                    JOptionPane.showMessageDialog(Payment.this, "Payment Successful!", "Payment Status", JOptionPane.INFORMATION_MESSAGE);
+                } else {
+                    try {
+                        connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+                        String updateQuery = "UPDATE payment SET status = 'PAID' WHERE your_condition_here";
+                        // Adjust the WHERE clause based on your table structure and conditions
+                        try (PreparedStatement preparedStatement = connection.prepareStatement(updateQuery)) {
+                            // If there are any parameters in the WHERE clause, set them accordingly
+                            // For example, if using a placeholder like "?", set the parameter like this:
+                            // preparedStatement.setXXX(parameterIndex, value);
+
+                            preparedStatement.executeUpdate();
+
+                            // Show success message to the user
+                            JOptionPane.showMessageDialog(Payment.this, "Payment Successful!", "Payment Status", JOptionPane.INFORMATION_MESSAGE);
+                        }
+                    } catch (SQLException ex) {
+                        ex.printStackTrace();
+                        // Handle the SQL exception (e.g., display an error message)
+                        JOptionPane.showMessageDialog(Payment.this, "Error updating payment status: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                    } finally {
+                        // Close the connection in the finally block to ensure it's always closed
+                        if (connection != null) {
+                            try {
+                                connection.close();
+                            } catch (SQLException ex) {
+                                ex.printStackTrace();
+                            }
+                        }
+                    }
+                }
+            }
         });
         timer.start();
+        
+        try {
+            connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            // Handle the connection error
+        }
     }
 
     public String getSelectedBank() {
@@ -101,7 +180,6 @@ public class Payment extends javax.swing.JFrame {
     }
 }
 
-    
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -484,9 +562,7 @@ public class Payment extends javax.swing.JFrame {
     }//GEN-LAST:event_btnBSIActionPerformed
     
     private void setSelectedBank(String bankName) {
-    this.selectedBank = bankName;
-    
-    
+    this.selectedBank = bankName;  
 }
 
     /**
@@ -557,4 +633,8 @@ public class Payment extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
     // End of variables declaration//GEN-END:variables
+
+    void handlePaymentPaid() {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
 }
