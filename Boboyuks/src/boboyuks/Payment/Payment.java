@@ -26,7 +26,8 @@ import javax.swing.JOptionPane;
 public class Payment extends javax.swing.JFrame {
     private String selectedBank;
     private Timer timer;
-    private int timeRemaining = 60;
+    private int timeRemaining = 30;
+    private PaymentPopup paymentPopup;
     
     // Fixed numbers for each bank
     private static final String[] BANK_NUMBERS = {"014", "008", "009", "002", "451"};
@@ -115,6 +116,12 @@ public class Payment extends javax.swing.JFrame {
         }
     }
     
+    public void stopTimer() {
+        if (timer != null) {
+            timer.stop();
+        }
+    }
+    
     public void handlePaymentPaid(int idReservation) {
                 try {
                     // Mengatur koneksi ke database
@@ -132,6 +139,17 @@ public class Payment extends javax.swing.JFrame {
 
                         // Tampilkan pesan sukses
                         JOptionPane.showMessageDialog(null, "Payment Successfully Recorded!");
+                        
+                        // Hentikan timer
+                        stopTimer();
+                        
+                        this.dispose();
+                        if (paymentPopup != null) {
+                            paymentPopup.dispose();
+                        }
+                        
+                        boboyuks.Order.MyOrder myOrderPage = new boboyuks.Order.MyOrder();
+                        myOrderPage.setVisible(true);
                     }
                 } catch (SQLException ex) {
                     ex.printStackTrace();
@@ -145,7 +163,7 @@ public class Payment extends javax.swing.JFrame {
                         }
                     }
                 }
-            }
+    }
 
     public String getSelectedBank() {
         return selectedBank;
@@ -532,11 +550,12 @@ Payment getPaymentInstance() {
         // TODO add your handling code here:
         if (selectedBank != null) {
             List<String> randomNumbers = getRandomNumbersForBank(selectedBank);
-            PaymentPopup paymentPopupFrame = new PaymentPopup(selectedBank, randomNumbers, BANK_NUMBERS, this); // Kirim 'this' sebagai referensi Payment
-            paymentPopupFrame.setVisible(true);
-            paymentPopupFrame.pack();
-            paymentPopupFrame.setLocationRelativeTo(null);
-            this.dispose();
+            paymentPopup = new PaymentPopup(selectedBank, randomNumbers, BANK_NUMBERS, this); // Simpan referensi
+
+            // Membuat lokasi PaymentPopup relatif ke Payment
+            paymentPopup.setLocationRelativeTo(this);
+            paymentPopup.setVisible(true);
+            paymentPopup.pack();
         } else {
             System.out.println("Please select a bank first.");
         }
