@@ -4,18 +4,212 @@
  */
 package boboyuks.Payment;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.Timer;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Random;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.PreparedStatement;
+import javax.swing.JOptionPane;
+
+
+
 /**
  *
  * @author Nugraha Adhitama
  */
 public class Payment extends javax.swing.JFrame {
+    private String selectedBank;
+    private Timer timer;
+    private int timeRemaining = 30;
+    private PaymentPopup paymentPopup;
+    
+    // Fixed numbers for each bank
+    private static final String[] BANK_NUMBERS = {"014", "008", "009", "002", "451"};
 
+    // Additional random numbers for each bank
+    private List<String> randomNumbersBCA;
+    private List<String> randomNumbersMANDIRI;
+    private List<String> randomNumbersBNI;
+    private List<String> randomNumbersBRI;
+    private List<String> randomNumbersBSI;
+    
+    private static final String DB_URL = "jdbc:mysql://localhost:3306/boboyuks";
+    private static final String DB_USER = "root";
+    private static final String DB_PASSWORD = "";
+    
+    private Connection connection;
+    
     /**
      * Creates new form Payment
      */
     public Payment() {
         initComponents();
+        initRandomNumbers();
+        
+        // Initialize and start the timer
+        timer = new Timer(1000, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                timeRemaining--;
+                updateTimerLabel();
+                if (timeRemaining == 0) {
+                    timer.stop();
+                    handlePaymentTimeout(); // Call the method when the timer reaches 0
+                }
+            }
+
+            private void updateTimerLabel() {
+                cdLabel.setText(format(timeRemaining / 60) + ":" + format(timeRemaining % 60));
+            }
+            
+            private String format(int i) {
+                return (i < 10) ? "0" + i : String.valueOf(i);
+            }
+            
+            private void handlePaymentTimeout() {
+                try {
+                    connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+
+                    // Mengatur id_reservation secara manual (nanti diganti).
+                    int idReservation = 1;
+
+                    // Membuat query untuk memasukkan data ke tabel payment
+                    String insertQuery = "INSERT INTO payment (id_reservation, status, timestamp) VALUES (?, 'time out', NOW())";
+
+                    try (PreparedStatement preparedStatement = connection.prepareStatement(insertQuery)) {
+                        // Mengatur id_reservation
+                        preparedStatement.setInt(1, idReservation);
+
+                        // Eksekusi query
+                        preparedStatement.executeUpdate();
+
+                        // Tampilkan pesan bahwa waktu pembayaran telah habis
+                        JOptionPane.showMessageDialog(null, "Payment Time Out!");
+                    }
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "Error updating payment status: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                } finally {
+                    if (connection != null) {
+                        try {
+                            connection.close();
+                        } catch (SQLException ex) {
+                            ex.printStackTrace();
+                        }
+                    }
+                }
+            }
+        });
+        timer.start();
+        
+        try {
+            connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            // Handle the connection error
+        }
     }
+    
+    public void stopTimer() {
+        if (timer != null) {
+            timer.stop();
+        }
+    }
+    
+    public void handlePaymentPaid(int idReservation) {
+                try {
+                    // Mengatur koneksi ke database
+                    connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+
+                    // Membuat query untuk memasukkan data ke tabel payment
+                    String insertQuery = "INSERT INTO payment (id_reservation, status, timestamp) VALUES (?, 'paid', NOW())";
+
+                    try (PreparedStatement preparedStatement = connection.prepareStatement(insertQuery)) {
+                        // Mengatur id_reservation
+                        preparedStatement.setInt(1, idReservation);
+
+                        // Eksekusi query
+                        preparedStatement.executeUpdate();
+
+                        // Tampilkan pesan sukses
+                        JOptionPane.showMessageDialog(null, "Payment Successfully Recorded!");
+                        
+                        // Hentikan timer
+                        stopTimer();
+                        
+                        this.dispose();
+                        if (paymentPopup != null) {
+                            paymentPopup.dispose();
+                        }
+                        
+                        boboyuks.Order.MyOrder myOrderPage = new boboyuks.Order.MyOrder();
+                        myOrderPage.setVisible(true);
+                    }
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "Error recording payment: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                } finally {
+                    if (connection != null) {
+                        try {
+                            connection.close();
+                        } catch (SQLException ex) {
+                            ex.printStackTrace();
+                        }
+                    }
+                }
+    }
+
+    public String getSelectedBank() {
+        return selectedBank;
+    }
+    
+    //added 10 more number
+        private void initRandomNumbers() {
+    randomNumbersBCA = generateRandomNumbers(BANK_NUMBERS[0], 10);
+    randomNumbersMANDIRI = generateRandomNumbers(BANK_NUMBERS[1], 10);
+    randomNumbersBNI = generateRandomNumbers(BANK_NUMBERS[2], 10);
+    randomNumbersBRI = generateRandomNumbers(BANK_NUMBERS[3], 10);
+    randomNumbersBSI = generateRandomNumbers(BANK_NUMBERS[4], 10);
+}
+        
+    //generate the rest of 10 number by random
+    private List<String> generateRandomNumbers(String fixedNumber, int count) {
+    List<String> randomNumbers = new ArrayList<>();
+    Random random = new Random();
+    for (int i = 0; i < count; i++) {
+        String randomNumber = fixedNumber + String.format("%03d", random.nextInt(1000));
+        randomNumbers.add(randomNumber);
+    }
+    return randomNumbers;
+}
+    private List<String> getRandomNumbersForBank(String bank) {
+    switch (bank) {
+        case "BCA VIRTUAL ACCOUNT":
+            return randomNumbersBCA;
+        case "MANDIRI VIRTUAL ACCOUNT":
+            return randomNumbersMANDIRI;
+        case "BNI VIRTUAL ACCOUNT":
+            return randomNumbersBNI;
+        case "BRI VIRTUAL ACCOUNT":
+            return randomNumbersBRI;
+        case "BSI VIRTUAL ACCOUNT":
+            return randomNumbersBSI;
+        default:
+            return Collections.emptyList();
+    }
+ 
+}
+    
+Payment getPaymentInstance() {
+    return this;
+}
+
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -35,14 +229,14 @@ public class Payment extends javax.swing.JFrame {
         jButton1 = new javax.swing.JButton();
         jLabel4 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
-        jLabel6 = new javax.swing.JLabel();
+        cdLabel = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
         jLabel7 = new javax.swing.JLabel();
-        jRadioButton1 = new javax.swing.JRadioButton();
-        jRadioButton3 = new javax.swing.JRadioButton();
-        jRadioButton4 = new javax.swing.JRadioButton();
-        jRadioButton5 = new javax.swing.JRadioButton();
-        jRadioButton6 = new javax.swing.JRadioButton();
+        btnBCA = new javax.swing.JRadioButton();
+        btnMANDIRI = new javax.swing.JRadioButton();
+        btnBRI = new javax.swing.JRadioButton();
+        btnBNI = new javax.swing.JRadioButton();
+        btnBSI = new javax.swing.JRadioButton();
         jPanel3 = new javax.swing.JPanel();
         jLabel8 = new javax.swing.JLabel();
         jLabel9 = new javax.swing.JLabel();
@@ -51,11 +245,11 @@ public class Payment extends javax.swing.JFrame {
         jLabel12 = new javax.swing.JLabel();
         jLabel13 = new javax.swing.JLabel();
         jLabel14 = new javax.swing.JLabel();
-        jLabel15 = new javax.swing.JLabel();
         jLabel16 = new javax.swing.JLabel();
         jLabel17 = new javax.swing.JLabel();
         jLabel18 = new javax.swing.JLabel();
-        jButton2 = new javax.swing.JButton();
+        jLabel19 = new javax.swing.JLabel();
+        fixPayment = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -112,28 +306,53 @@ public class Payment extends javax.swing.JFrame {
         jLabel5.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
         jLabel5.setText("Complete payment in");
 
-        jLabel6.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
-        jLabel6.setText("00:30:00");
+        cdLabel.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
+        cdLabel.setText("00:30:00");
 
         jPanel1.setBackground(new java.awt.Color(89, 185, 255));
 
         jLabel7.setFont(new java.awt.Font("Eras Bold ITC", 0, 28)); // NOI18N
         jLabel7.setText("Bank Transfer");
 
-        jRadioButton1.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
-        jRadioButton1.setText("BCA Virtual Account");
+        btnBCA.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
+        btnBCA.setText("BCA Virtual Account");
+        btnBCA.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnBCAActionPerformed(evt);
+            }
+        });
 
-        jRadioButton3.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
-        jRadioButton3.setText("Mandiri Virtual Account");
+        btnMANDIRI.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
+        btnMANDIRI.setText("Mandiri Virtual Account");
+        btnMANDIRI.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnMANDIRIActionPerformed(evt);
+            }
+        });
 
-        jRadioButton4.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
-        jRadioButton4.setText("BRI Virtual Account");
+        btnBRI.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
+        btnBRI.setText("BRI Virtual Account");
+        btnBRI.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnBRIActionPerformed(evt);
+            }
+        });
 
-        jRadioButton5.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
-        jRadioButton5.setText("BNI Virtual Account");
+        btnBNI.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
+        btnBNI.setText("BNI Virtual Account");
+        btnBNI.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnBNIActionPerformed(evt);
+            }
+        });
 
-        jRadioButton6.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
-        jRadioButton6.setText("BSI Virtual Account");
+        btnBSI.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
+        btnBSI.setText("BSI Virtual Account");
+        btnBSI.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnBSIActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -143,11 +362,11 @@ public class Payment extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel7)
-                    .addComponent(jRadioButton1)
-                    .addComponent(jRadioButton3)
-                    .addComponent(jRadioButton4)
-                    .addComponent(jRadioButton5)
-                    .addComponent(jRadioButton6))
+                    .addComponent(btnBCA)
+                    .addComponent(btnMANDIRI)
+                    .addComponent(btnBRI)
+                    .addComponent(btnBNI)
+                    .addComponent(btnBSI))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
@@ -156,15 +375,15 @@ public class Payment extends javax.swing.JFrame {
                 .addGap(20, 20, 20)
                 .addComponent(jLabel7)
                 .addGap(18, 18, 18)
-                .addComponent(jRadioButton1)
+                .addComponent(btnBCA)
                 .addGap(18, 18, 18)
-                .addComponent(jRadioButton3)
+                .addComponent(btnMANDIRI)
                 .addGap(18, 18, 18)
-                .addComponent(jRadioButton5)
+                .addComponent(btnBNI)
                 .addGap(18, 18, 18)
-                .addComponent(jRadioButton4)
+                .addComponent(btnBRI)
                 .addGap(18, 18, 18)
-                .addComponent(jRadioButton6)
+                .addComponent(btnBSI)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -191,9 +410,6 @@ public class Payment extends javax.swing.JFrame {
         jLabel14.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
         jLabel14.setText("With Breakfast 2 pax");
 
-        jLabel15.setFont(new java.awt.Font("Eras Bold ITC", 1, 28)); // NOI18N
-        jLabel15.setText("Guest");
-
         jLabel16.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
         jLabel16.setText("Siti Markonah");
 
@@ -203,6 +419,9 @@ public class Payment extends javax.swing.JFrame {
         jLabel18.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
         jLabel18.setText("siti.markonal@gmail.com");
 
+        jLabel19.setFont(new java.awt.Font("Eras Bold ITC", 1, 28)); // NOI18N
+        jLabel19.setText("Guest");
+
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
@@ -210,6 +429,7 @@ public class Payment extends javax.swing.JFrame {
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addGap(17, 17, 17)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel19)
                     .addComponent(jLabel8)
                     .addComponent(jLabel9)
                     .addComponent(jLabel10)
@@ -217,7 +437,6 @@ public class Payment extends javax.swing.JFrame {
                     .addComponent(jLabel12)
                     .addComponent(jLabel13)
                     .addComponent(jLabel14)
-                    .addComponent(jLabel15)
                     .addComponent(jLabel16)
                     .addComponent(jLabel17)
                     .addComponent(jLabel18))
@@ -240,9 +459,9 @@ public class Payment extends javax.swing.JFrame {
                 .addComponent(jLabel13)
                 .addGap(18, 18, 18)
                 .addComponent(jLabel14)
-                .addGap(73, 73, 73)
-                .addComponent(jLabel15)
-                .addGap(18, 18, 18)
+                .addGap(79, 79, 79)
+                .addComponent(jLabel19)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jLabel16)
                 .addGap(18, 18, 18)
                 .addComponent(jLabel17)
@@ -251,18 +470,23 @@ public class Payment extends javax.swing.JFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        jButton2.setBackground(new java.awt.Color(89, 185, 255));
-        jButton2.setFont(new java.awt.Font("Eras Bold ITC", 1, 30)); // NOI18N
-        jButton2.setForeground(new java.awt.Color(255, 255, 255));
-        jButton2.setText("PAY WITH BANK TRANSFER");
+        fixPayment.setBackground(new java.awt.Color(89, 185, 255));
+        fixPayment.setFont(new java.awt.Font("Eras Bold ITC", 1, 30)); // NOI18N
+        fixPayment.setForeground(new java.awt.Color(255, 255, 255));
+        fixPayment.setText("PAY WITH BANK TRANSFER");
+        fixPayment.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                fixPaymentActionPerformed(evt);
+            }
+        });
 
         jLayeredPane1.setLayer(jPanel2, javax.swing.JLayeredPane.DEFAULT_LAYER);
         jLayeredPane1.setLayer(jLabel4, javax.swing.JLayeredPane.DEFAULT_LAYER);
         jLayeredPane1.setLayer(jLabel5, javax.swing.JLayeredPane.DEFAULT_LAYER);
-        jLayeredPane1.setLayer(jLabel6, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        jLayeredPane1.setLayer(cdLabel, javax.swing.JLayeredPane.DEFAULT_LAYER);
         jLayeredPane1.setLayer(jPanel1, javax.swing.JLayeredPane.DEFAULT_LAYER);
         jLayeredPane1.setLayer(jPanel3, javax.swing.JLayeredPane.DEFAULT_LAYER);
-        jLayeredPane1.setLayer(jButton2, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        jLayeredPane1.setLayer(fixPayment, javax.swing.JLayeredPane.DEFAULT_LAYER);
 
         javax.swing.GroupLayout jLayeredPane1Layout = new javax.swing.GroupLayout(jLayeredPane1);
         jLayeredPane1.setLayout(jLayeredPane1Layout);
@@ -275,11 +499,11 @@ public class Payment extends javax.swing.JFrame {
                     .addGroup(jLayeredPane1Layout.createSequentialGroup()
                         .addComponent(jLabel5)
                         .addGap(18, 18, 18)
-                        .addComponent(jLabel6))
+                        .addComponent(cdLabel))
                     .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGap(146, 146, 146)
                 .addGroup(jLayeredPane1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, 509, Short.MAX_VALUE)
+                    .addComponent(fixPayment, javax.swing.GroupLayout.DEFAULT_SIZE, 509, Short.MAX_VALUE)
                     .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(jLayeredPane1Layout.createSequentialGroup()
@@ -297,12 +521,12 @@ public class Payment extends javax.swing.JFrame {
                         .addGap(18, 18, 18)
                         .addGroup(jLayeredPane1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel5)
-                            .addComponent(jLabel6))
+                            .addComponent(cdLabel))
                         .addGap(18, 18, 18)
                         .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(46, 46, 46)
-                .addComponent(jButton2)
+                .addComponent(fixPayment)
                 .addGap(0, 1551, Short.MAX_VALUE))
         );
 
@@ -322,10 +546,59 @@ public class Payment extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void fixPaymentActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fixPaymentActionPerformed
+        // TODO add your handling code here:
+        if (selectedBank != null) {
+            List<String> randomNumbers = getRandomNumbersForBank(selectedBank);
+            paymentPopup = new PaymentPopup(selectedBank, randomNumbers, BANK_NUMBERS, this); // Simpan referensi
+
+            // Membuat lokasi PaymentPopup relatif ke Payment
+            paymentPopup.setLocationRelativeTo(this);
+            paymentPopup.setVisible(true);
+            paymentPopup.pack();
+        } else {
+            System.out.println("Please select a bank first.");
+        }
+    }//GEN-LAST:event_fixPaymentActionPerformed
+
+    private void btnBCAActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBCAActionPerformed
+        // TODO add your handling code here:
+        setSelectedBank("BCA VIRTUAL ACCOUNT");
+    }//GEN-LAST:event_btnBCAActionPerformed
+
+    private void btnMANDIRIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnMANDIRIActionPerformed
+        // TODO add your handling code here:
+       setSelectedBank("MANDIRI VIRTUAL ACCOUNT");
+
+    }//GEN-LAST:event_btnMANDIRIActionPerformed
+
+    private void btnBNIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBNIActionPerformed
+        // TODO add your handling code here:
+        setSelectedBank("BNI VIRTUAL ACCOUNT");
+
+    }//GEN-LAST:event_btnBNIActionPerformed
+
+    private void btnBRIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBRIActionPerformed
+        // TODO add your handling code here:
+        setSelectedBank("BRI VIRTUAL ACCOUNT");
+
+    }//GEN-LAST:event_btnBRIActionPerformed
+
+    private void btnBSIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBSIActionPerformed
+        // TODO add your handling code here:
+        setSelectedBank("BSI VIRTUAL ACCOUNT");
+
+    }//GEN-LAST:event_btnBSIActionPerformed
+    
+    private void setSelectedBank(String bankName) {
+    this.selectedBank = bankName;  
+}
+
     /**
      * @param args the command line arguments
      */
     public static void main(String args[]) {
+        
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
@@ -358,23 +631,28 @@ public class Payment extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JRadioButton btnBCA;
+    private javax.swing.JRadioButton btnBNI;
+    private javax.swing.JRadioButton btnBRI;
+    private javax.swing.JRadioButton btnBSI;
+    private javax.swing.JRadioButton btnMANDIRI;
+    private javax.swing.JLabel cdLabel;
+    private javax.swing.JButton fixPayment;
     private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel14;
-    private javax.swing.JLabel jLabel15;
     private javax.swing.JLabel jLabel16;
     private javax.swing.JLabel jLabel17;
     private javax.swing.JLabel jLabel18;
+    private javax.swing.JLabel jLabel19;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
@@ -382,11 +660,7 @@ public class Payment extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
-    private javax.swing.JRadioButton jRadioButton1;
-    private javax.swing.JRadioButton jRadioButton3;
-    private javax.swing.JRadioButton jRadioButton4;
-    private javax.swing.JRadioButton jRadioButton5;
-    private javax.swing.JRadioButton jRadioButton6;
     private javax.swing.JScrollPane jScrollPane1;
     // End of variables declaration//GEN-END:variables
+
 }
