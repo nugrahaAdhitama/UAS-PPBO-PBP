@@ -175,8 +175,10 @@ public class PaymentPopup extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void finishBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_finishBtnActionPerformed
-        int idReservation = 1; // Sesuaikan logika untuk mendapatkan ID reservasi yang sebenarnya
-        paymentInstance.handlePaymentPaid(idReservation);
+            String idReservation = paymentInstance.getBookingIDCode();
+            String numberVAString = numberVA.getText(); // Mengambil nomor VA
+
+            paymentInstance.handlePaymentPaid(idReservation, numberVAString); // Mengirim nomor VA sebagai id_payment
     }//GEN-LAST:event_finishBtnActionPerformed
     
     

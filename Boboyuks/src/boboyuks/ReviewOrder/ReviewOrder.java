@@ -3,6 +3,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 package boboyuks.ReviewOrder;
+import boboyuks.Payment.Payment;
 import java.sql.DriverManager;
 import java.sql.Statement;
 import javax.swing.JFrame;
@@ -557,10 +558,10 @@ public class ReviewOrder extends javax.swing.JFrame {
 
             // Generate 4 digit acak
             Random rand = new Random();
-            int randomNum = rand.nextInt(1000); // Menghasilkan angka antara 0 - 9999
+            String randomNum = String.format("%010d", rand.nextInt(1000000000)); // Menghasilkan angka antara 0 - 9999
 
             // Gabungkan tanggal saat ini dengan 4 digit acak
-            int reservationId = Integer.parseInt(currentDate + String.format("%03d", randomNum));
+            String reservationId = currentDate + randomNum;
             
             // ID user dan harga ditetapkan secara statis untuk contoh ini
             int idUser = 1;
@@ -571,7 +572,11 @@ public class ReviewOrder extends javax.swing.JFrame {
 
             st.executeUpdate(query);
 
-            JOptionPane.showMessageDialog(null, "Reservation Confirmed with ID: " + reservationId);
+//            JOptionPane.showMessageDialog(null, "Reservation Confirmed with ID: " + reservationId);
+
+            Payment paymentPage = new Payment(reservationId);
+            paymentPage.setVisible(true);
+            this.dispose();
         } catch (Exception e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(null, "Error: " + e.getMessage());

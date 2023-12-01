@@ -48,9 +48,10 @@ public class Payment extends javax.swing.JFrame {
     /**
      * Creates new form Payment
      */
-    public Payment() {
+    public Payment(String reservationId) {
         initComponents();
         initRandomNumbers();
+        BookingIDCode.setText(reservationId);
         
         // Initialize and start the timer
         timer = new Timer(1000, new ActionListener() {
@@ -122,47 +123,44 @@ public class Payment extends javax.swing.JFrame {
         }
     }
     
-    public void handlePaymentPaid(int idReservation) {
+    public String getBookingIDCode() {
+        return BookingIDCode.getText();
+    }
+    
+    public void handlePaymentPaid(String idReservation, String idPayment) {
                 try {
-                    // Mengatur koneksi ke database
-                    connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+                        connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
 
-                    // Membuat query untuk memasukkan data ke tabel payment
-                    String insertQuery = "INSERT INTO payment (id_reservation, status, timestamp) VALUES (?, 'paid', NOW())";
+                        String insertQuery = "INSERT INTO payment (id_payment, id_reservation, status, timestamp) VALUES (?, ?, 'paid', NOW())";
+                        try (PreparedStatement preparedStatement = connection.prepareStatement(insertQuery)) {
+                            preparedStatement.setString(1, idPayment); // Mengatur id_payment sebagai String
+                            preparedStatement.setString(2, idReservation); // Mengatur id_reservation
 
-                    try (PreparedStatement preparedStatement = connection.prepareStatement(insertQuery)) {
-                        // Mengatur id_reservation
-                        preparedStatement.setInt(1, idReservation);
+                            preparedStatement.executeUpdate();
 
-                        // Eksekusi query
-                        preparedStatement.executeUpdate();
+                            JOptionPane.showMessageDialog(null, "Payment Successfully Recorded!");
 
-                        // Tampilkan pesan sukses
-                        JOptionPane.showMessageDialog(null, "Payment Successfully Recorded!");
-                        
-                        // Hentikan timer
-                        stopTimer();
-                        
-                        this.dispose();
-                        if (paymentPopup != null) {
-                            paymentPopup.dispose();
+                            stopTimer();
+                            this.dispose();
+                            if (paymentPopup != null) {
+                                paymentPopup.dispose();
+                            }
+
+                            boboyuks.Order.MyOrder myOrderPage = new boboyuks.Order.MyOrder();
+                            myOrderPage.setVisible(true);
                         }
-                        
-                        boboyuks.Order.MyOrder myOrderPage = new boboyuks.Order.MyOrder();
-                        myOrderPage.setVisible(true);
-                    }
-                } catch (SQLException ex) {
-                    ex.printStackTrace();
-                    JOptionPane.showMessageDialog(null, "Error recording payment: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-                } finally {
-                    if (connection != null) {
-                        try {
-                            connection.close();
-                        } catch (SQLException ex) {
-                            ex.printStackTrace();
+                    } catch (SQLException ex) {
+                        ex.printStackTrace();
+                        JOptionPane.showMessageDialog(null, "Error recording payment: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                    } finally {
+                        if (connection != null) {
+                            try {
+                                connection.close();
+                            } catch (SQLException ex) {
+                                ex.printStackTrace();
+                            }
                         }
                     }
-                }
     }
 
     public String getSelectedBank() {
@@ -597,38 +595,38 @@ Payment getPaymentInstance() {
     /**
      * @param args the command line arguments
      */
-    public static void main(String args[]) {
-        
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(Payment.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(Payment.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(Payment.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(Payment.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new Payment().setVisible(true);
-            }
-        });
-    }
+//    public static void main(String args[]) {
+//        
+//        /* Set the Nimbus look and feel */
+//        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+//        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+//         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+//         */
+//        try {
+//            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+//                if ("Nimbus".equals(info.getName())) {
+//                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+//                    break;
+//                }
+//            }
+//        } catch (ClassNotFoundException ex) {
+//            java.util.logging.Logger.getLogger(Payment.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+//        } catch (InstantiationException ex) {
+//            java.util.logging.Logger.getLogger(Payment.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+//        } catch (IllegalAccessException ex) {
+//            java.util.logging.Logger.getLogger(Payment.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+//        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+//            java.util.logging.Logger.getLogger(Payment.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+//        }
+//        //</editor-fold>
+//
+//        /* Create and display the form */
+//        java.awt.EventQueue.invokeLater(new Runnable() {
+//            public void run() {
+//                new Payment().setVisible(true);
+//            }
+//        });
+//    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel BookingIDCode;
