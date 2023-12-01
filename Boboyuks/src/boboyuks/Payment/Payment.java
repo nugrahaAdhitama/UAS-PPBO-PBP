@@ -26,8 +26,10 @@ import javax.swing.JOptionPane;
 public class Payment extends javax.swing.JFrame {
     private String selectedBank;
     private Timer timer;
-    private int timeRemaining = 30;
+    private int timeRemaining = 90;
     private PaymentPopup paymentPopup;
+    private boolean isPaymentSuccessful = false;
+    private String virtualAccountNumber; 
     
     // Fixed numbers for each bank
     private static final String[] BANK_NUMBERS = {"014", "008", "009", "002", "451"};
@@ -57,13 +59,30 @@ public class Payment extends javax.swing.JFrame {
         GuestEmailAddress.setText(guestEmailAddress);
         DateOfStay.setText(guestCheckInDate);
         DurationStayText.setText(durationStay);
-        
+
+        try {
+            connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            // Handle the connection error
+        }
+    }
+    
+    public void startTimer() {
         // Initialize and start the timer
         timer = new Timer(1000, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 timeRemaining--;
                 updateTimerLabel();
+                
+                // set time untuk stop ketika payment sukses dan jangan ekseskusi method handlePaymentTimeout
+                if (isPaymentSuccessful) {
+                    // Jika pembayaran berhasil, hentikan timer
+                    timer.stop();
+                    return;
+                }
+                
                 if (timeRemaining == 0) {
                     timer.stop();
                     handlePaymentTimeout(); // Call the method when the timer reaches 0
@@ -82,21 +101,23 @@ public class Payment extends javax.swing.JFrame {
                 try {
                     connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
 
-                    // Mengatur id_reservation secara manual (nanti diganti).
-                    int idReservation = 1;
+                    String idReservation = getBookingIDCode();
 
-                    // Membuat query untuk memasukkan data ke tabel payment
-                    String insertQuery = "INSERT INTO payment (id_reservation, status, timestamp) VALUES (?, 'time out', NOW())";
+                    // Check if virtualAccountNumber is initialized
+                    if (virtualAccountNumber == null || virtualAccountNumber.isEmpty()) {
+                        System.out.println("Virtual Account Number not generated!");
+                        return;
+                    }
+
+                    String insertQuery = "INSERT INTO payment (id_payment, id_reservation, status, timestamp) VALUES (?, ?, 'time out', NOW())";
 
                     try (PreparedStatement preparedStatement = connection.prepareStatement(insertQuery)) {
-                        // Mengatur id_reservation
-                        preparedStatement.setInt(1, idReservation);
+                        preparedStatement.setString(1, virtualAccountNumber);
+                        preparedStatement.setString(2, idReservation);
 
-                        // Eksekusi query
                         preparedStatement.executeUpdate();
-
-                        // Tampilkan pesan bahwa waktu pembayaran telah habis
                         JOptionPane.showMessageDialog(null, "Payment Time Out!");
+                        paymentPopup.setVisible(false);
                     }
                 } catch (SQLException ex) {
                     ex.printStackTrace();
@@ -113,13 +134,6 @@ public class Payment extends javax.swing.JFrame {
             }
         });
         timer.start();
-        
-        try {
-            connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            // Handle the connection error
-        }
     }
     
     public void stopTimer() {
@@ -130,6 +144,33 @@ public class Payment extends javax.swing.JFrame {
     
     public String getBookingIDCode() {
         return BookingIDCode.getText();
+    }
+    
+    private void generateVirtualAccountNumber() {
+        if (selectedBank == null) {
+            return;
+        }
+
+        String bankCode = getBankCode(selectedBank);
+        Random random = new Random();
+        this.virtualAccountNumber = bankCode + String.format("%010d", random.nextInt(1000000000));
+    }
+    
+    private String getBankCode(String bankName) {
+        switch (bankName) {
+            case "BCA VIRTUAL ACCOUNT":
+                return BANK_NUMBERS[0];
+            case "MANDIRI VIRTUAL ACCOUNT":
+                return BANK_NUMBERS[1];
+            case "BNI VIRTUAL ACCOUNT":
+                return BANK_NUMBERS[2];
+            case "BRI VIRTUAL ACCOUNT":
+                return BANK_NUMBERS[3];
+            case "BSI VIRTUAL ACCOUNT":
+                return BANK_NUMBERS[4];
+            default:
+                return "";
+        }
     }
     
     public void handlePaymentPaid(String idReservation, String idPayment) {
@@ -145,7 +186,8 @@ public class Payment extends javax.swing.JFrame {
 
                             JOptionPane.showMessageDialog(null, "Payment Successfully Recorded!");
 
-                            stopTimer();
+                            isPaymentSuccessful = true;
+//                            stopTimer();
                             this.dispose();
                             if (paymentPopup != null) {
                                 paymentPopup.dispose();
@@ -310,7 +352,7 @@ Payment getPaymentInstance() {
         jLabel5.setText("Complete payment in");
 
         cdLabel.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
-        cdLabel.setText("00:30:00");
+        cdLabel.setText("00:01:30");
 
         jPanel1.setBackground(new java.awt.Color(89, 185, 255));
 
@@ -552,10 +594,9 @@ Payment getPaymentInstance() {
     private void fixPaymentActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fixPaymentActionPerformed
         // TODO add your handling code here:
         if (selectedBank != null) {
-            List<String> randomNumbers = getRandomNumbersForBank(selectedBank);
-            paymentPopup = new PaymentPopup(selectedBank, randomNumbers, BANK_NUMBERS, this); // Simpan referensi
-
-            // Membuat lokasi PaymentPopup relatif ke Payment
+            generateVirtualAccountNumber();
+            startTimer();  // Mulai timer di sini
+            paymentPopup = new PaymentPopup(selectedBank, virtualAccountNumber, this);
             paymentPopup.setLocationRelativeTo(this);
             paymentPopup.setVisible(true);
             paymentPopup.pack();
@@ -594,7 +635,8 @@ Payment getPaymentInstance() {
     }//GEN-LAST:event_btnBSIActionPerformed
     
     private void setSelectedBank(String bankName) {
-    this.selectedBank = bankName;  
+    this.selectedBank = bankName;
+    generateVirtualAccountNumber();
 }
 
     /**
