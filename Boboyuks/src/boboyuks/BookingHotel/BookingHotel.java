@@ -10,6 +10,7 @@ import java.util.Date;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.regex.Pattern;
 
 
 /*
@@ -29,6 +30,14 @@ public class BookingHotel extends javax.swing.JFrame {
     public BookingHotel() {
         initComponents();
     }
+    
+    private boolean isValidEmail(String email) {
+        String emailRegex = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
+        Pattern pattern = Pattern.compile(emailRegex);
+            if (email == null)
+                return false;
+            return pattern.matcher(email).matches();
+     }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -503,15 +512,51 @@ public class BookingHotel extends javax.swing.JFrame {
         // TODO add your handling code here:
         // Format ttanggal dari JDateChooser
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        String checkInDateStr = dateFormat.format(checkInDate.getDate());
-        String checkOutDateStr = dateFormat.format(checkOutDate.getDate());
-        String fullNameInput = fname.getText();
-        String phoneNumberInput = phoneNumber.getText();
-        String emailAddressInput = emailAddress.getText();
         
         Date checkIn = checkInDate.getDate();
         Date checkOut = checkOutDate.getDate();
         
+        String checkInDateStr = dateFormat.format(checkIn);
+        String checkOutDateStr = dateFormat.format(checkOut);
+        String fullNameInput = fname.getText();
+        String phoneNumberInput = phoneNumber.getText();
+        String emailAddressInput = emailAddress.getText();
+        
+        // Validasi apakah tanggal telah dipilih
+        if (checkIn == null) {
+            JOptionPane.showMessageDialog(this, "Please select a check-in date.", "Missing Information", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        if (checkOut == null) {
+            JOptionPane.showMessageDialog(this, "Please select a check-out date.", "Missing Information", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
+        // validasi nama lenkgap
+        if (fullNameInput.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Please enter your full name.", "Missing Information", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
+        // validasi nomor telpon
+        if (phoneNumberInput.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Please enter your phone number.", "Missing Information", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
+        // validasi email
+        if (emailAddressInput.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Please enter your email.", "Missing Information", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
+        if (!isValidEmail(emailAddressInput)) {
+            JOptionPane.showMessageDialog(this, "Please enter a valid email.", "Invalid Email", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        // validasi tanggal checkout tidak sebelum tanggal checkin
         if (!checkOut.after(checkIn)) {
             JOptionPane.showMessageDialog(this, "Check-out date must be after check-in date.", "Date invalid", JOptionPane.ERROR_MESSAGE);
             return;

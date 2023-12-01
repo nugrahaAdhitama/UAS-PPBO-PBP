@@ -238,8 +238,8 @@ Payment getPaymentInstance() {
         btnBNI = new javax.swing.JRadioButton();
         btnBSI = new javax.swing.JRadioButton();
         jPanel3 = new javax.swing.JPanel();
-        jLabel8 = new javax.swing.JLabel();
-        jLabel9 = new javax.swing.JLabel();
+        BookingIDLabel = new javax.swing.JLabel();
+        BookingIDCode = new javax.swing.JLabel();
         jLabel10 = new javax.swing.JLabel();
         jLabel11 = new javax.swing.JLabel();
         jLabel12 = new javax.swing.JLabel();
@@ -389,11 +389,11 @@ Payment getPaymentInstance() {
 
         jPanel3.setBackground(new java.awt.Color(89, 185, 255));
 
-        jLabel8.setFont(new java.awt.Font("Eras Bold ITC", 1, 28)); // NOI18N
-        jLabel8.setText("Booking ID");
+        BookingIDLabel.setFont(new java.awt.Font("Eras Bold ITC", 1, 28)); // NOI18N
+        BookingIDLabel.setText("Booking ID");
 
-        jLabel9.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
-        jLabel9.setText("XXXXXXXXXX");
+        BookingIDCode.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
+        BookingIDCode.setText("XXXXXXXXXX");
 
         jLabel10.setFont(new java.awt.Font("Eras Medium ITC", 0, 28)); // NOI18N
         jLabel10.setText("Booking Detail");
@@ -430,8 +430,8 @@ Payment getPaymentInstance() {
                 .addGap(17, 17, 17)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel19)
-                    .addComponent(jLabel8)
-                    .addComponent(jLabel9)
+                    .addComponent(BookingIDLabel)
+                    .addComponent(BookingIDCode)
                     .addComponent(jLabel10)
                     .addComponent(jLabel11)
                     .addComponent(jLabel12)
@@ -446,9 +446,9 @@ Payment getPaymentInstance() {
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addGap(17, 17, 17)
-                .addComponent(jLabel8)
+                .addComponent(BookingIDLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jLabel9)
+                .addComponent(BookingIDCode)
                 .addGap(60, 60, 60)
                 .addComponent(jLabel10)
                 .addGap(18, 18, 18)
@@ -631,6 +631,8 @@ Payment getPaymentInstance() {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel BookingIDCode;
+    private javax.swing.JLabel BookingIDLabel;
     private javax.swing.JRadioButton btnBCA;
     private javax.swing.JRadioButton btnBNI;
     private javax.swing.JRadioButton btnBRI;
@@ -654,8 +656,6 @@ Payment getPaymentInstance() {
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel7;
-    private javax.swing.JLabel jLabel8;
-    private javax.swing.JLabel jLabel9;
     private javax.swing.JLayeredPane jLayeredPane1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
