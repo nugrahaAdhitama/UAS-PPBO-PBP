@@ -11,6 +11,7 @@ import java.util.Date;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -540,7 +541,7 @@ public class ReviewOrder extends javax.swing.JFrame {
         // TODO add your handling code here:
         String url = "jdbc:mysql://localhost:3306/boboyuks";
         String user = "root";
-        String password = ""; // Sesuaikan dengan password database Anda
+        String password = "";
 
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
@@ -549,16 +550,28 @@ public class ReviewOrder extends javax.swing.JFrame {
 
             String checkIn = CheckInDateText.getText();
             String checkOut = CheckOutDateText.getText();
+            
+            // Ambil tanggal saat ini dalam format yymmdd
+            SimpleDateFormat sdf = new SimpleDateFormat("yyMMdd");
+            String currentDate = sdf.format(new Date());
+
+            // Generate 4 digit acak
+            Random rand = new Random();
+            int randomNum = rand.nextInt(1000); // Menghasilkan angka antara 0 - 9999
+
+            // Gabungkan tanggal saat ini dengan 4 digit acak
+            int reservationId = Integer.parseInt(currentDate + String.format("%03d", randomNum));
+            
             // ID user dan harga ditetapkan secara statis untuk contoh ini
             int idUser = 1;
             int price = 1000000;
 
-            String query = "INSERT INTO reservation (id_user, start_date, end_date, price) VALUES (" 
-                + idUser + ", '" + checkIn + "', '" + checkOut + "', " + price + ")";
+            String query = "INSERT INTO reservation (id_reservation, id_user, start_date, end_date, price) VALUES ("
+            + reservationId + ", " + idUser + ", '" + checkIn + "', '" + checkOut + "', " + price + ")";
 
             st.executeUpdate(query);
 
-            JOptionPane.showMessageDialog(null, "Reservation Confirmed");
+            JOptionPane.showMessageDialog(null, "Reservation Confirmed with ID: " + reservationId);
         } catch (Exception e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(null, "Error: " + e.getMessage());
