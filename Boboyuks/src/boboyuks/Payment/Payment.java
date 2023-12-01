@@ -48,10 +48,15 @@ public class Payment extends javax.swing.JFrame {
     /**
      * Creates new form Payment
      */
-    public Payment(String reservationId) {
+    public Payment(String reservationId, String guestFullName, String guestPhoneNumber, String guestEmailAddress, String guestCheckInDate, String durationStay) {
         initComponents();
         initRandomNumbers();
         BookingIDCode.setText(reservationId);
+        GuestName.setText(guestFullName);
+        GusetPhoneNumber.setText(guestPhoneNumber);
+        GuestEmailAddress.setText(guestEmailAddress);
+        DateOfStay.setText(guestCheckInDate);
+        DurationStayText.setText(durationStay);
         
         // Initialize and start the timer
         timer = new Timer(1000, new ActionListener() {
@@ -239,13 +244,13 @@ Payment getPaymentInstance() {
         BookingIDLabel = new javax.swing.JLabel();
         BookingIDCode = new javax.swing.JLabel();
         jLabel10 = new javax.swing.JLabel();
-        jLabel11 = new javax.swing.JLabel();
-        jLabel12 = new javax.swing.JLabel();
+        DateOfStay = new javax.swing.JLabel();
+        DurationStayText = new javax.swing.JLabel();
         jLabel13 = new javax.swing.JLabel();
         jLabel14 = new javax.swing.JLabel();
-        jLabel16 = new javax.swing.JLabel();
-        jLabel17 = new javax.swing.JLabel();
-        jLabel18 = new javax.swing.JLabel();
+        GuestName = new javax.swing.JLabel();
+        GusetPhoneNumber = new javax.swing.JLabel();
+        GuestEmailAddress = new javax.swing.JLabel();
         jLabel19 = new javax.swing.JLabel();
         fixPayment = new javax.swing.JButton();
 
@@ -396,11 +401,11 @@ Payment getPaymentInstance() {
         jLabel10.setFont(new java.awt.Font("Eras Medium ITC", 0, 28)); // NOI18N
         jLabel10.setText("Booking Detail");
 
-        jLabel11.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
-        jLabel11.setText("Mon, 3 Dec 2023 - Tue, 4 Dec 2023");
+        DateOfStay.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
+        DateOfStay.setText("Mon, 3 Dec 2023 - Tue, 4 Dec 2023");
 
-        jLabel12.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
-        jLabel12.setText("1 night");
+        DurationStayText.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
+        DurationStayText.setText("1 night");
 
         jLabel13.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
         jLabel13.setText("Superior Tropical Twin Beds Room");
@@ -408,14 +413,14 @@ Payment getPaymentInstance() {
         jLabel14.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
         jLabel14.setText("With Breakfast 2 pax");
 
-        jLabel16.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
-        jLabel16.setText("Siti Markonah");
+        GuestName.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
+        GuestName.setText("Siti Markonah");
 
-        jLabel17.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
-        jLabel17.setText("081234567890");
+        GusetPhoneNumber.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
+        GusetPhoneNumber.setText("081234567890");
 
-        jLabel18.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
-        jLabel18.setText("siti.markonal@gmail.com");
+        GuestEmailAddress.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
+        GuestEmailAddress.setText("siti.markonal@gmail.com");
 
         jLabel19.setFont(new java.awt.Font("Eras Bold ITC", 1, 28)); // NOI18N
         jLabel19.setText("Guest");
@@ -431,13 +436,13 @@ Payment getPaymentInstance() {
                     .addComponent(BookingIDLabel)
                     .addComponent(BookingIDCode)
                     .addComponent(jLabel10)
-                    .addComponent(jLabel11)
-                    .addComponent(jLabel12)
+                    .addComponent(DateOfStay)
+                    .addComponent(DurationStayText)
                     .addComponent(jLabel13)
                     .addComponent(jLabel14)
-                    .addComponent(jLabel16)
-                    .addComponent(jLabel17)
-                    .addComponent(jLabel18))
+                    .addComponent(GuestName)
+                    .addComponent(GusetPhoneNumber)
+                    .addComponent(GuestEmailAddress))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel3Layout.setVerticalGroup(
@@ -450,9 +455,9 @@ Payment getPaymentInstance() {
                 .addGap(60, 60, 60)
                 .addComponent(jLabel10)
                 .addGap(18, 18, 18)
-                .addComponent(jLabel11)
+                .addComponent(DateOfStay)
                 .addGap(18, 18, 18)
-                .addComponent(jLabel12)
+                .addComponent(DurationStayText)
                 .addGap(18, 18, 18)
                 .addComponent(jLabel13)
                 .addGap(18, 18, 18)
@@ -460,11 +465,11 @@ Payment getPaymentInstance() {
                 .addGap(79, 79, 79)
                 .addComponent(jLabel19)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jLabel16)
+                .addComponent(GuestName)
                 .addGap(18, 18, 18)
-                .addComponent(jLabel17)
+                .addComponent(GusetPhoneNumber)
                 .addGap(18, 18, 18)
-                .addComponent(jLabel18)
+                .addComponent(GuestEmailAddress)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -631,6 +636,11 @@ Payment getPaymentInstance() {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel BookingIDCode;
     private javax.swing.JLabel BookingIDLabel;
+    private javax.swing.JLabel DateOfStay;
+    private javax.swing.JLabel DurationStayText;
+    private javax.swing.JLabel GuestEmailAddress;
+    private javax.swing.JLabel GuestName;
+    private javax.swing.JLabel GusetPhoneNumber;
     private javax.swing.JRadioButton btnBCA;
     private javax.swing.JRadioButton btnBNI;
     private javax.swing.JRadioButton btnBRI;
@@ -641,13 +651,8 @@ Payment getPaymentInstance() {
     private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
-    private javax.swing.JLabel jLabel11;
-    private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel14;
-    private javax.swing.JLabel jLabel16;
-    private javax.swing.JLabel jLabel17;
-    private javax.swing.JLabel jLabel18;
     private javax.swing.JLabel jLabel19;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;

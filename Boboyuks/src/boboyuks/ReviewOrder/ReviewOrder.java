@@ -6,6 +6,7 @@ package boboyuks.ReviewOrder;
 import boboyuks.Payment.Payment;
 import java.sql.DriverManager;
 import java.sql.Statement;
+import java.text.ParseException;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import java.util.Date;
@@ -47,6 +48,28 @@ public class ReviewOrder extends javax.swing.JFrame {
         }
         
     }
+    
+     // cara untuk mendapatkan info user(guest)
+     public String getUserFullName() {
+        String fullName = FullNameText.getText();
+        return fullName;
+     }
+     
+     public String getUserPhoneNumber() {
+         String phoneNumber = PhoneNumberText.getText();
+         return phoneNumber;
+     }
+     
+     public String getUserEmailAddress() {
+         String emailAddress = EmailAddressText.getText();
+         return emailAddress;
+     }
+     
+     public String getUserDuration() {
+         String durationStay = DurationText.getText();
+         return durationStay;
+     }
+    
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -574,9 +597,25 @@ public class ReviewOrder extends javax.swing.JFrame {
 
 //            JOptionPane.showMessageDialog(null, "Reservation Confirmed with ID: " + reservationId);
 
-            Payment paymentPage = new Payment(reservationId);
-            paymentPage.setVisible(true);
-            this.dispose();
+            SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd");
+            SimpleDateFormat outputFormat = new SimpleDateFormat("E, d MMM yyyy");
+
+            try {
+                Date checkInDate = inputFormat.parse(checkIn);
+                Date checkOutDate = inputFormat.parse(checkOut);
+
+                String formattedCheckIn = outputFormat.format(checkInDate); // Tanggal dalam format "E, d MMM yyyy"
+                String formattedCheckOut = outputFormat.format(checkOutDate); // Tanggal dalam format "E, d MMM yyyy"
+
+                String dateOfStay = formattedCheckIn + " - " + formattedCheckOut;
+
+                Payment paymentPage = new Payment(reservationId, getUserFullName(), getUserPhoneNumber(), getUserEmailAddress(), dateOfStay, getUserDuration());
+                paymentPage.setVisible(true);
+                this.dispose();
+            } catch (ParseException e) {
+                e.printStackTrace();
+                // Tampilkan error atau handle exception
+            }
         } catch (Exception e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(null, "Error: " + e.getMessage());
