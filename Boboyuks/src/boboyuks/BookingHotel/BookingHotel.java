@@ -1,6 +1,7 @@
 package boboyuks.BookingHotel;
 
 
+import boboyuks.ReviewOrder.ReviewOrder;
 import java.sql.DriverManager;
 import java.sql.Statement;
 import javax.swing.JFrame;
@@ -80,7 +81,7 @@ public class BookingHotel extends javax.swing.JFrame {
         checkInDate = new com.toedter.calendar.JDateChooser();
         checkOutDate = new com.toedter.calendar.JDateChooser();
         jLabel15 = new javax.swing.JLabel();
-        reviewBtn = new javax.swing.JButton();
+        GoToReviewButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -407,13 +408,13 @@ public class BookingHotel extends javax.swing.JFrame {
         jLabel15.setFont(new java.awt.Font("Eras Medium ITC", 0, 30)); // NOI18N
         jLabel15.setText("Contact Detail :");
 
-        reviewBtn.setBackground(new java.awt.Color(89, 185, 255));
-        reviewBtn.setFont(new java.awt.Font("Eras Bold ITC", 1, 30)); // NOI18N
-        reviewBtn.setForeground(new java.awt.Color(255, 255, 255));
-        reviewBtn.setText("CONTINUE TO REVIEW");
-        reviewBtn.addActionListener(new java.awt.event.ActionListener() {
+        GoToReviewButton.setBackground(new java.awt.Color(89, 185, 255));
+        GoToReviewButton.setFont(new java.awt.Font("Eras Bold ITC", 1, 30)); // NOI18N
+        GoToReviewButton.setForeground(new java.awt.Color(255, 255, 255));
+        GoToReviewButton.setText("CONTINUE TO REVIEW");
+        GoToReviewButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                reviewBtnActionPerformed(evt);
+                GoToReviewButtonActionPerformed(evt);
             }
         });
 
@@ -425,7 +426,7 @@ public class BookingHotel extends javax.swing.JFrame {
         jLayeredPane1.setLayer(jPanel4, javax.swing.JLayeredPane.DEFAULT_LAYER);
         jLayeredPane1.setLayer(jPanel3, javax.swing.JLayeredPane.DEFAULT_LAYER);
         jLayeredPane1.setLayer(jLabel15, javax.swing.JLayeredPane.DEFAULT_LAYER);
-        jLayeredPane1.setLayer(reviewBtn, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        jLayeredPane1.setLayer(GoToReviewButton, javax.swing.JLayeredPane.DEFAULT_LAYER);
 
         javax.swing.GroupLayout jLayeredPane1Layout = new javax.swing.GroupLayout(jLayeredPane1);
         jLayeredPane1.setLayout(jLayeredPane1Layout);
@@ -434,7 +435,7 @@ public class BookingHotel extends javax.swing.JFrame {
             .addGroup(jLayeredPane1Layout.createSequentialGroup()
                 .addGap(33, 33, 33)
                 .addGroup(jLayeredPane1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(reviewBtn)
+                    .addComponent(GoToReviewButton)
                     .addGroup(jLayeredPane1Layout.createSequentialGroup()
                         .addGroup(jLayeredPane1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(jLabel4)
@@ -472,9 +473,9 @@ public class BookingHotel extends javax.swing.JFrame {
                         .addGap(18, 18, 18)
                         .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(64, 64, 64)
-                .addComponent(reviewBtn)
-                .addGap(0, 521, Short.MAX_VALUE))
+                .addGap(18, 18, 18)
+                .addComponent(GoToReviewButton)
+                .addGap(0, 567, Short.MAX_VALUE))
             .addGroup(jLayeredPane1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(jLayeredPane1Layout.createSequentialGroup()
                     .addGap(225, 225, 225)
@@ -498,54 +499,28 @@ public class BookingHotel extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void reviewBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reviewBtnActionPerformed
+    private void GoToReviewButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GoToReviewButtonActionPerformed
         // TODO add your handling code here:
-        String query;
-    String SUrl, SUser, SPass;
-    SUrl = "jdbc:MYSQL://localhost:3306/boboyuks";
-    SUser = "root";
-    SPass = "";
-
-    try {
-        Class.forName("com.mysql.cj.jdbc.Driver");
-        java.sql.Connection con = DriverManager.getConnection(SUrl, SUser, SPass);
-        Statement st = con.createStatement();
-
-        if(checkInDate.getDate() == null) {
-            JOptionPane.showMessageDialog(new JFrame(), "Check-in date is required", "Error", JOptionPane.ERROR_MESSAGE);
-        } else if(checkOutDate.getDate() == null) {
-            JOptionPane.showMessageDialog(new JFrame(), "Check-out date is required", "Error", JOptionPane.ERROR_MESSAGE);
-        } else if("".equals(roomPrice.getText())) {
-            JOptionPane.showMessageDialog(new JFrame(), "Room Price is required", "Error", JOptionPane.ERROR_MESSAGE);
-        } else {
-            Date startDate = checkInDate.getDate();
-            Date endDate = checkOutDate.getDate();
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-            String startDateString = dateFormat.format(startDate);
-            String endDateString = dateFormat.format(endDate);
-            String priceText = roomPrice.getText();
-            String numericPart = priceText.replaceAll("[^0-9]", "");
-            int price = Integer.parseInt(numericPart);
-
-            // Menggunakan LocalDateTime untuk mendapatkan timestamp saat ini
-            LocalDateTime now = LocalDateTime.now();
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-            String currentTimestamp = now.format(formatter);
-
-            query = "INSERT INTO reservation(`id_user`, `start_date`, `end_date`, `price`, `ts_created`, `ts_updated`, `ts_cancelled`)" + " VALUES ('" + 4 + "', '" + startDateString + "', '" + endDateString + "', '" + price + "', '" + currentTimestamp + "', '" + currentTimestamp + "', '" + currentTimestamp + "')";
-
-            st.execute(query);
-            checkInDate.setDate(null);
-            checkOutDate.setDate(null);
-            roomPrice.setText("");
-
-            JOptionPane.showMessageDialog(null, "Reservation Added!");
+        // Format ttanggal dari JDateChooser
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        String checkInDateStr = dateFormat.format(checkInDate.getDate());
+        String checkOutDateStr = dateFormat.format(checkOutDate.getDate());
+        String fullNameInput = fname.getText();
+        String phoneNumberInput = phoneNumber.getText();
+        String emailAddressInput = emailAddress.getText();
+        
+        Date checkIn = checkInDate.getDate();
+        Date checkOut = checkOutDate.getDate();
+        
+        if (!checkOut.after(checkIn)) {
+            JOptionPane.showMessageDialog(this, "Check-out date must be after check-in date.", "Date invalid", JOptionPane.ERROR_MESSAGE);
+            return;
         }
-    } catch (Exception e) {
-        System.out.println("Error!" + e.getMessage());
-    }
 
-    }//GEN-LAST:event_reviewBtnActionPerformed
+        ReviewOrder reviewOrder = new ReviewOrder(checkInDateStr, checkOutDateStr, fullNameInput, phoneNumberInput, emailAddressInput);
+        reviewOrder.setVisible(true);
+        this.dispose();
+    }//GEN-LAST:event_GoToReviewButtonActionPerformed
 
     /**
      * @param args  the command line arguments
@@ -583,6 +558,7 @@ public class BookingHotel extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton GoToReviewButton;
     private com.toedter.calendar.JDateChooser checkInDate;
     private com.toedter.calendar.JDateChooser checkOutDate;
     private javax.swing.JTextField emailAddress;
@@ -624,7 +600,6 @@ public class BookingHotel extends javax.swing.JFrame {
     private javax.swing.JTextPane jTextPane1;
     private javax.swing.JTextPane jTextPane2;
     private javax.swing.JTextField phoneNumber;
-    private javax.swing.JButton reviewBtn;
     private javax.swing.JLabel roomPrice;
     // End of variables declaration//GEN-END:variables
 }

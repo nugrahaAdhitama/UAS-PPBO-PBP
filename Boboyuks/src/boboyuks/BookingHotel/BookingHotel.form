@@ -50,7 +50,7 @@
                   <Group type="102" attributes="0">
                       <EmptySpace min="-2" pref="33" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="1" attributes="0">
-                          <Component id="reviewBtn" min="-2" max="-2" attributes="0"/>
+                          <Component id="GoToReviewButton" min="-2" max="-2" attributes="0"/>
                           <Group type="102" attributes="0">
                               <Group type="103" groupAlignment="0" max="-2" attributes="0">
                                   <Component id="jLabel4" min="-2" max="-2" attributes="0"/>
@@ -99,9 +99,9 @@
                           </Group>
                           <Component id="jPanel3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace min="-2" pref="64" max="-2" attributes="0"/>
-                      <Component id="reviewBtn" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="0" pref="521" max="32767" attributes="0"/>
+                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                      <Component id="GoToReviewButton" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="0" pref="567" max="32767" attributes="0"/>
                   </Group>
                   <Group type="103" rootIndex="1" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
@@ -680,7 +680,7 @@
                 <Property name="text" type="java.lang.String" value="Contact Detail :"/>
               </Properties>
             </Component>
-            <Component class="javax.swing.JButton" name="reviewBtn">
+            <Component class="javax.swing.JButton" name="GoToReviewButton">
               <Properties>
                 <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                   <Color blue="ff" green="b9" red="59" type="rgb"/>
@@ -694,7 +694,7 @@
                 <Property name="text" type="java.lang.String" value="CONTINUE TO REVIEW"/>
               </Properties>
               <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="reviewBtnActionPerformed"/>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="GoToReviewButtonActionPerformed"/>
               </Events>
             </Component>
           </SubComponents>
