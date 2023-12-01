@@ -14,6 +14,7 @@ import javax.swing.JOptionPane;
  */
 public class PaymentPopup extends javax.swing.JFrame {
     private String bankName;
+    private String virtualAccountNumber;
     private Payment paymentInstance;
     /**
      * Creates new form PaymentPopup
@@ -22,12 +23,13 @@ public class PaymentPopup extends javax.swing.JFrame {
         initComponents();
     }
 
-    PaymentPopup(String bankName, List<String> randomNumbers, String[] bankNumbers, Payment paymentInstance) {
-        this();
+    PaymentPopup(String bankName, String virtualAccountNumber, Payment paymentInstance) {
+        initComponents();
         this.bankName = bankName;
+        this.virtualAccountNumber = virtualAccountNumber;
         this.paymentInstance = paymentInstance;
-        setBankName(bankName);
-        setVirtualAccountNumber(generateRandomDigits(), bankNumbers);
+        choosenBank.setText(bankName);
+        numberVA.setText(virtualAccountNumber);
     }
 
     
@@ -175,8 +177,8 @@ public class PaymentPopup extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void finishBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_finishBtnActionPerformed
-        int idReservation = 1; // Sesuaikan logika untuk mendapatkan ID reservasi yang sebenarnya
-        paymentInstance.handlePaymentPaid(idReservation);
+            String idReservation = paymentInstance.getBookingIDCode();
+            paymentInstance.handlePaymentPaid(idReservation, virtualAccountNumber);
     }//GEN-LAST:event_finishBtnActionPerformed
     
     

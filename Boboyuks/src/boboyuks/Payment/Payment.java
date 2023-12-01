@@ -26,8 +26,10 @@ import javax.swing.JOptionPane;
 public class Payment extends javax.swing.JFrame {
     private String selectedBank;
     private Timer timer;
-    private int timeRemaining = 30;
+    private int timeRemaining = 90;
     private PaymentPopup paymentPopup;
+    private boolean isPaymentSuccessful = false;
+    private String virtualAccountNumber; 
     
     // Fixed numbers for each bank
     private static final String[] BANK_NUMBERS = {"014", "008", "009", "002", "451"};
@@ -48,16 +50,39 @@ public class Payment extends javax.swing.JFrame {
     /**
      * Creates new form Payment
      */
-    public Payment() {
+    public Payment(String reservationId, String guestFullName, String guestPhoneNumber, String guestEmailAddress, String guestCheckInDate, String durationStay) {
         initComponents();
         initRandomNumbers();
-        
+        BookingIDCode.setText(reservationId);
+        GuestName.setText(guestFullName);
+        GusetPhoneNumber.setText(guestPhoneNumber);
+        GuestEmailAddress.setText(guestEmailAddress);
+        DateOfStay.setText(guestCheckInDate);
+        DurationStayText.setText(durationStay);
+
+        try {
+            connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            // Handle the connection error
+        }
+    }
+    
+    public void startTimer() {
         // Initialize and start the timer
         timer = new Timer(1000, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 timeRemaining--;
                 updateTimerLabel();
+                
+                // set time untuk stop ketika payment sukses dan jangan ekseskusi method handlePaymentTimeout
+                if (isPaymentSuccessful) {
+                    // Jika pembayaran berhasil, hentikan timer
+                    timer.stop();
+                    return;
+                }
+                
                 if (timeRemaining == 0) {
                     timer.stop();
                     handlePaymentTimeout(); // Call the method when the timer reaches 0
@@ -76,21 +101,23 @@ public class Payment extends javax.swing.JFrame {
                 try {
                     connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
 
-                    // Mengatur id_reservation secara manual (nanti diganti).
-                    int idReservation = 1;
+                    String idReservation = getBookingIDCode();
 
-                    // Membuat query untuk memasukkan data ke tabel payment
-                    String insertQuery = "INSERT INTO payment (id_reservation, status, timestamp) VALUES (?, 'time out', NOW())";
+                    // Check if virtualAccountNumber is initialized
+                    if (virtualAccountNumber == null || virtualAccountNumber.isEmpty()) {
+                        System.out.println("Virtual Account Number not generated!");
+                        return;
+                    }
+
+                    String insertQuery = "INSERT INTO payment (id_payment, id_reservation, status, timestamp) VALUES (?, ?, 'time out', NOW())";
 
                     try (PreparedStatement preparedStatement = connection.prepareStatement(insertQuery)) {
-                        // Mengatur id_reservation
-                        preparedStatement.setInt(1, idReservation);
+                        preparedStatement.setString(1, virtualAccountNumber);
+                        preparedStatement.setString(2, idReservation);
 
-                        // Eksekusi query
                         preparedStatement.executeUpdate();
-
-                        // Tampilkan pesan bahwa waktu pembayaran telah habis
                         JOptionPane.showMessageDialog(null, "Payment Time Out!");
+                        paymentPopup.setVisible(false);
                     }
                 } catch (SQLException ex) {
                     ex.printStackTrace();
@@ -107,13 +134,6 @@ public class Payment extends javax.swing.JFrame {
             }
         });
         timer.start();
-        
-        try {
-            connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            // Handle the connection error
-        }
     }
     
     public void stopTimer() {
@@ -122,47 +142,72 @@ public class Payment extends javax.swing.JFrame {
         }
     }
     
-    public void handlePaymentPaid(int idReservation) {
+    public String getBookingIDCode() {
+        return BookingIDCode.getText();
+    }
+    
+    private void generateVirtualAccountNumber() {
+        if (selectedBank == null) {
+            return;
+        }
+
+        String bankCode = getBankCode(selectedBank);
+        Random random = new Random();
+        this.virtualAccountNumber = bankCode + String.format("%010d", random.nextInt(1000000000));
+    }
+    
+    private String getBankCode(String bankName) {
+        switch (bankName) {
+            case "BCA VIRTUAL ACCOUNT":
+                return BANK_NUMBERS[0];
+            case "MANDIRI VIRTUAL ACCOUNT":
+                return BANK_NUMBERS[1];
+            case "BNI VIRTUAL ACCOUNT":
+                return BANK_NUMBERS[2];
+            case "BRI VIRTUAL ACCOUNT":
+                return BANK_NUMBERS[3];
+            case "BSI VIRTUAL ACCOUNT":
+                return BANK_NUMBERS[4];
+            default:
+                return "";
+        }
+    }
+    
+    public void handlePaymentPaid(String idReservation, String idPayment) {
                 try {
-                    // Mengatur koneksi ke database
-                    connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+                        connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
 
-                    // Membuat query untuk memasukkan data ke tabel payment
-                    String insertQuery = "INSERT INTO payment (id_reservation, status, timestamp) VALUES (?, 'paid', NOW())";
+                        String insertQuery = "INSERT INTO payment (id_payment, id_reservation, status, timestamp) VALUES (?, ?, 'paid', NOW())";
+                        try (PreparedStatement preparedStatement = connection.prepareStatement(insertQuery)) {
+                            preparedStatement.setString(1, idPayment); // Mengatur id_payment sebagai String
+                            preparedStatement.setString(2, idReservation); // Mengatur id_reservation
 
-                    try (PreparedStatement preparedStatement = connection.prepareStatement(insertQuery)) {
-                        // Mengatur id_reservation
-                        preparedStatement.setInt(1, idReservation);
+                            preparedStatement.executeUpdate();
 
-                        // Eksekusi query
-                        preparedStatement.executeUpdate();
+                            JOptionPane.showMessageDialog(null, "Payment Successfully Recorded!");
 
-                        // Tampilkan pesan sukses
-                        JOptionPane.showMessageDialog(null, "Payment Successfully Recorded!");
-                        
-                        // Hentikan timer
-                        stopTimer();
-                        
-                        this.dispose();
-                        if (paymentPopup != null) {
-                            paymentPopup.dispose();
+                            isPaymentSuccessful = true;
+//                            stopTimer();
+                            this.dispose();
+                            if (paymentPopup != null) {
+                                paymentPopup.dispose();
+                            }
+
+                            boboyuks.Order.MyOrder myOrderPage = new boboyuks.Order.MyOrder();
+                            myOrderPage.setVisible(true);
                         }
-                        
-                        boboyuks.Order.MyOrder myOrderPage = new boboyuks.Order.MyOrder();
-                        myOrderPage.setVisible(true);
-                    }
-                } catch (SQLException ex) {
-                    ex.printStackTrace();
-                    JOptionPane.showMessageDialog(null, "Error recording payment: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-                } finally {
-                    if (connection != null) {
-                        try {
-                            connection.close();
-                        } catch (SQLException ex) {
-                            ex.printStackTrace();
+                    } catch (SQLException ex) {
+                        ex.printStackTrace();
+                        JOptionPane.showMessageDialog(null, "Error recording payment: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                    } finally {
+                        if (connection != null) {
+                            try {
+                                connection.close();
+                            } catch (SQLException ex) {
+                                ex.printStackTrace();
+                            }
                         }
                     }
-                }
     }
 
     public String getSelectedBank() {
@@ -238,16 +283,16 @@ Payment getPaymentInstance() {
         btnBNI = new javax.swing.JRadioButton();
         btnBSI = new javax.swing.JRadioButton();
         jPanel3 = new javax.swing.JPanel();
-        jLabel8 = new javax.swing.JLabel();
-        jLabel9 = new javax.swing.JLabel();
+        BookingIDLabel = new javax.swing.JLabel();
+        BookingIDCode = new javax.swing.JLabel();
         jLabel10 = new javax.swing.JLabel();
-        jLabel11 = new javax.swing.JLabel();
-        jLabel12 = new javax.swing.JLabel();
+        DateOfStay = new javax.swing.JLabel();
+        DurationStayText = new javax.swing.JLabel();
         jLabel13 = new javax.swing.JLabel();
         jLabel14 = new javax.swing.JLabel();
-        jLabel16 = new javax.swing.JLabel();
-        jLabel17 = new javax.swing.JLabel();
-        jLabel18 = new javax.swing.JLabel();
+        GuestName = new javax.swing.JLabel();
+        GusetPhoneNumber = new javax.swing.JLabel();
+        GuestEmailAddress = new javax.swing.JLabel();
         jLabel19 = new javax.swing.JLabel();
         fixPayment = new javax.swing.JButton();
 
@@ -307,7 +352,7 @@ Payment getPaymentInstance() {
         jLabel5.setText("Complete payment in");
 
         cdLabel.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
-        cdLabel.setText("00:30:00");
+        cdLabel.setText("00:01:30");
 
         jPanel1.setBackground(new java.awt.Color(89, 185, 255));
 
@@ -389,20 +434,20 @@ Payment getPaymentInstance() {
 
         jPanel3.setBackground(new java.awt.Color(89, 185, 255));
 
-        jLabel8.setFont(new java.awt.Font("Eras Bold ITC", 1, 28)); // NOI18N
-        jLabel8.setText("Booking ID");
+        BookingIDLabel.setFont(new java.awt.Font("Eras Bold ITC", 1, 28)); // NOI18N
+        BookingIDLabel.setText("Booking ID");
 
-        jLabel9.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
-        jLabel9.setText("XXXXXXXXXX");
+        BookingIDCode.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
+        BookingIDCode.setText("XXXXXXXXXX");
 
         jLabel10.setFont(new java.awt.Font("Eras Medium ITC", 0, 28)); // NOI18N
         jLabel10.setText("Booking Detail");
 
-        jLabel11.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
-        jLabel11.setText("Mon, 3 Dec 2023 - Tue, 4 Dec 2023");
+        DateOfStay.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
+        DateOfStay.setText("Mon, 3 Dec 2023 - Tue, 4 Dec 2023");
 
-        jLabel12.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
-        jLabel12.setText("1 night");
+        DurationStayText.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
+        DurationStayText.setText("1 night");
 
         jLabel13.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
         jLabel13.setText("Superior Tropical Twin Beds Room");
@@ -410,14 +455,14 @@ Payment getPaymentInstance() {
         jLabel14.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
         jLabel14.setText("With Breakfast 2 pax");
 
-        jLabel16.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
-        jLabel16.setText("Siti Markonah");
+        GuestName.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
+        GuestName.setText("Siti Markonah");
 
-        jLabel17.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
-        jLabel17.setText("081234567890");
+        GusetPhoneNumber.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
+        GusetPhoneNumber.setText("081234567890");
 
-        jLabel18.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
-        jLabel18.setText("siti.markonal@gmail.com");
+        GuestEmailAddress.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
+        GuestEmailAddress.setText("siti.markonal@gmail.com");
 
         jLabel19.setFont(new java.awt.Font("Eras Bold ITC", 1, 28)); // NOI18N
         jLabel19.setText("Guest");
@@ -430,31 +475,31 @@ Payment getPaymentInstance() {
                 .addGap(17, 17, 17)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel19)
-                    .addComponent(jLabel8)
-                    .addComponent(jLabel9)
+                    .addComponent(BookingIDLabel)
+                    .addComponent(BookingIDCode)
                     .addComponent(jLabel10)
-                    .addComponent(jLabel11)
-                    .addComponent(jLabel12)
+                    .addComponent(DateOfStay)
+                    .addComponent(DurationStayText)
                     .addComponent(jLabel13)
                     .addComponent(jLabel14)
-                    .addComponent(jLabel16)
-                    .addComponent(jLabel17)
-                    .addComponent(jLabel18))
+                    .addComponent(GuestName)
+                    .addComponent(GusetPhoneNumber)
+                    .addComponent(GuestEmailAddress))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addGap(17, 17, 17)
-                .addComponent(jLabel8)
+                .addComponent(BookingIDLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jLabel9)
+                .addComponent(BookingIDCode)
                 .addGap(60, 60, 60)
                 .addComponent(jLabel10)
                 .addGap(18, 18, 18)
-                .addComponent(jLabel11)
+                .addComponent(DateOfStay)
                 .addGap(18, 18, 18)
-                .addComponent(jLabel12)
+                .addComponent(DurationStayText)
                 .addGap(18, 18, 18)
                 .addComponent(jLabel13)
                 .addGap(18, 18, 18)
@@ -462,11 +507,11 @@ Payment getPaymentInstance() {
                 .addGap(79, 79, 79)
                 .addComponent(jLabel19)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jLabel16)
+                .addComponent(GuestName)
                 .addGap(18, 18, 18)
-                .addComponent(jLabel17)
+                .addComponent(GusetPhoneNumber)
                 .addGap(18, 18, 18)
-                .addComponent(jLabel18)
+                .addComponent(GuestEmailAddress)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -549,10 +594,9 @@ Payment getPaymentInstance() {
     private void fixPaymentActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fixPaymentActionPerformed
         // TODO add your handling code here:
         if (selectedBank != null) {
-            List<String> randomNumbers = getRandomNumbersForBank(selectedBank);
-            paymentPopup = new PaymentPopup(selectedBank, randomNumbers, BANK_NUMBERS, this); // Simpan referensi
-
-            // Membuat lokasi PaymentPopup relatif ke Payment
+            generateVirtualAccountNumber();
+            startTimer();  // Mulai timer di sini
+            paymentPopup = new PaymentPopup(selectedBank, virtualAccountNumber, this);
             paymentPopup.setLocationRelativeTo(this);
             paymentPopup.setVisible(true);
             paymentPopup.pack();
@@ -591,46 +635,54 @@ Payment getPaymentInstance() {
     }//GEN-LAST:event_btnBSIActionPerformed
     
     private void setSelectedBank(String bankName) {
-    this.selectedBank = bankName;  
+    this.selectedBank = bankName;
+    generateVirtualAccountNumber();
 }
 
     /**
      * @param args the command line arguments
      */
-    public static void main(String args[]) {
-        
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(Payment.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(Payment.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(Payment.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(Payment.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new Payment().setVisible(true);
-            }
-        });
-    }
+//    public static void main(String args[]) {
+//        
+//        /* Set the Nimbus look and feel */
+//        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+//        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+//         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+//         */
+//        try {
+//            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+//                if ("Nimbus".equals(info.getName())) {
+//                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+//                    break;
+//                }
+//            }
+//        } catch (ClassNotFoundException ex) {
+//            java.util.logging.Logger.getLogger(Payment.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+//        } catch (InstantiationException ex) {
+//            java.util.logging.Logger.getLogger(Payment.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+//        } catch (IllegalAccessException ex) {
+//            java.util.logging.Logger.getLogger(Payment.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+//        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+//            java.util.logging.Logger.getLogger(Payment.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+//        }
+//        //</editor-fold>
+//
+//        /* Create and display the form */
+//        java.awt.EventQueue.invokeLater(new Runnable() {
+//            public void run() {
+//                new Payment().setVisible(true);
+//            }
+//        });
+//    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel BookingIDCode;
+    private javax.swing.JLabel BookingIDLabel;
+    private javax.swing.JLabel DateOfStay;
+    private javax.swing.JLabel DurationStayText;
+    private javax.swing.JLabel GuestEmailAddress;
+    private javax.swing.JLabel GuestName;
+    private javax.swing.JLabel GusetPhoneNumber;
     private javax.swing.JRadioButton btnBCA;
     private javax.swing.JRadioButton btnBNI;
     private javax.swing.JRadioButton btnBRI;
@@ -641,21 +693,14 @@ Payment getPaymentInstance() {
     private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
-    private javax.swing.JLabel jLabel11;
-    private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel14;
-    private javax.swing.JLabel jLabel16;
-    private javax.swing.JLabel jLabel17;
-    private javax.swing.JLabel jLabel18;
     private javax.swing.JLabel jLabel19;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel7;
-    private javax.swing.JLabel jLabel8;
-    private javax.swing.JLabel jLabel9;
     private javax.swing.JLayeredPane jLayeredPane1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;

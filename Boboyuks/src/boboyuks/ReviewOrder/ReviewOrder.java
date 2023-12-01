@@ -3,6 +3,18 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 package boboyuks.ReviewOrder;
+import boboyuks.Payment.Payment;
+import java.sql.DriverManager;
+import java.sql.Statement;
+import java.text.ParseException;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import java.util.Date;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 /**
  *
@@ -13,9 +25,51 @@ public class ReviewOrder extends javax.swing.JFrame {
     /**
      * Creates new form ReviewOrder
      */
-    public ReviewOrder() {
+    public ReviewOrder(String checkInDateStr, String checkOutDateStr, String fullNameInput, String phoneNumberInput, String emailAddressInput) {
         initComponents();
+        CheckInDateText.setText(checkInDateStr);
+        CheckOutDateText.setText(checkOutDateStr);
+        FullNameText.setText(fullNameInput);
+        PhoneNumberText.setText(phoneNumberInput);
+        EmailAddressText.setText(emailAddressInput);
+        
+        try {
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+            Date checkIn = dateFormat.parse(checkInDateStr);
+            Date checkOut = dateFormat.parse(checkOutDateStr);
+            
+            long duration = checkOut.getTime() - checkIn.getTime();
+            long daysBetween = TimeUnit.DAYS.convert(duration, TimeUnit.MILLISECONDS);
+            
+            DurationText.setText(daysBetween + " Night(s)");
+        } catch(Exception e) {
+            e.printStackTrace();
+            DurationText.setText("Error in date parsing!");
+        }
+        
     }
+    
+     // cara untuk mendapatkan info user(guest)
+     public String getUserFullName() {
+        String fullName = FullNameText.getText();
+        return fullName;
+     }
+     
+     public String getUserPhoneNumber() {
+         String phoneNumber = PhoneNumberText.getText();
+         return phoneNumber;
+     }
+     
+     public String getUserEmailAddress() {
+         String emailAddress = EmailAddressText.getText();
+         return emailAddress;
+     }
+     
+     public String getUserDuration() {
+         String durationStay = DurationText.getText();
+         return durationStay;
+     }
+    
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -39,11 +93,11 @@ public class ReviewOrder extends javax.swing.JFrame {
         jLabel5 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
         jLabel7 = new javax.swing.JLabel();
-        jLabel8 = new javax.swing.JLabel();
+        CheckInDateText = new javax.swing.JLabel();
         jLabel9 = new javax.swing.JLabel();
-        jLabel10 = new javax.swing.JLabel();
+        CheckOutDateText = new javax.swing.JLabel();
         jLabel11 = new javax.swing.JLabel();
-        jLabel12 = new javax.swing.JLabel();
+        DurationText = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
         jLabel13 = new javax.swing.JLabel();
         jLabel14 = new javax.swing.JLabel();
@@ -63,12 +117,12 @@ public class ReviewOrder extends javax.swing.JFrame {
         jLabel23 = new javax.swing.JLabel();
         jPanel5 = new javax.swing.JPanel();
         jLabel24 = new javax.swing.JLabel();
-        jLabel27 = new javax.swing.JLabel();
-        jLabel28 = new javax.swing.JLabel();
-        jLabel29 = new javax.swing.JLabel();
+        FullNameText = new javax.swing.JLabel();
+        PhoneNumberText = new javax.swing.JLabel();
+        EmailAddressText = new javax.swing.JLabel();
         jPanel6 = new javax.swing.JPanel();
         jLabel30 = new javax.swing.JLabel();
-        jButton2 = new javax.swing.JButton();
+        goToPaymentButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -142,20 +196,20 @@ public class ReviewOrder extends javax.swing.JFrame {
         jLabel7.setFont(new java.awt.Font("Eras Medium ITC", 0, 20)); // NOI18N
         jLabel7.setText("Check-In");
 
-        jLabel8.setFont(new java.awt.Font("Eras Medium ITC", 0, 20)); // NOI18N
-        jLabel8.setText("4th Dec2023");
+        CheckInDateText.setFont(new java.awt.Font("Eras Medium ITC", 0, 20)); // NOI18N
+        CheckInDateText.setText("4th Dec2023");
 
         jLabel9.setFont(new java.awt.Font("Eras Medium ITC", 0, 20)); // NOI18N
         jLabel9.setText("Check-Out");
 
-        jLabel10.setFont(new java.awt.Font("Eras Medium ITC", 0, 20)); // NOI18N
-        jLabel10.setText("5th Dec 2023");
+        CheckOutDateText.setFont(new java.awt.Font("Eras Medium ITC", 0, 20)); // NOI18N
+        CheckOutDateText.setText("5th Dec 2023");
 
         jLabel11.setFont(new java.awt.Font("Eras Medium ITC", 0, 20)); // NOI18N
         jLabel11.setText("Duration of Stay");
 
-        jLabel12.setFont(new java.awt.Font("Eras Medium ITC", 0, 20)); // NOI18N
-        jLabel12.setText("1 Night");
+        DurationText.setFont(new java.awt.Font("Eras Medium ITC", 0, 20)); // NOI18N
+        DurationText.setText("1 Night");
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -176,9 +230,9 @@ public class ReviewOrder extends javax.swing.JFrame {
                             .addComponent(jLabel9))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel10, javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jLabel8, javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jLabel12, javax.swing.GroupLayout.Alignment.TRAILING))
+                            .addComponent(CheckOutDateText, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(CheckInDateText, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(DurationText, javax.swing.GroupLayout.Alignment.TRAILING))
                         .addGap(34, 34, 34))))
         );
         jPanel1Layout.setVerticalGroup(
@@ -191,15 +245,15 @@ public class ReviewOrder extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel7)
-                            .addComponent(jLabel8))
+                            .addComponent(CheckInDateText))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel9)
-                            .addComponent(jLabel10))
+                            .addComponent(CheckOutDateText))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel11)
-                            .addComponent(jLabel12)))
+                            .addComponent(DurationText)))
                     .addComponent(jLabel5))
                 .addContainerGap(20, Short.MAX_VALUE))
         );
@@ -363,14 +417,14 @@ public class ReviewOrder extends javax.swing.JFrame {
         jLabel24.setFont(new java.awt.Font("Eras Medium ITC", 0, 28)); // NOI18N
         jLabel24.setText("Contact Detail");
 
-        jLabel27.setFont(new java.awt.Font("Eras Medium ITC", 0, 28)); // NOI18N
-        jLabel27.setText("Siti Makaroh");
+        FullNameText.setFont(new java.awt.Font("Eras Medium ITC", 0, 28)); // NOI18N
+        FullNameText.setText("Siti Makaroh");
 
-        jLabel28.setFont(new java.awt.Font("Eras Medium ITC", 0, 28)); // NOI18N
-        jLabel28.setText("081234567890");
+        PhoneNumberText.setFont(new java.awt.Font("Eras Medium ITC", 0, 28)); // NOI18N
+        PhoneNumberText.setText("081234567890");
 
-        jLabel29.setFont(new java.awt.Font("Eras Medium ITC", 0, 28)); // NOI18N
-        jLabel29.setText("siti.markonal@gmail.com");
+        EmailAddressText.setFont(new java.awt.Font("Eras Medium ITC", 0, 28)); // NOI18N
+        EmailAddressText.setText("siti.markonal@gmail.com");
 
         javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
         jPanel5.setLayout(jPanel5Layout);
@@ -380,9 +434,9 @@ public class ReviewOrder extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel24)
-                    .addComponent(jLabel27)
-                    .addComponent(jLabel28)
-                    .addComponent(jLabel29))
+                    .addComponent(FullNameText)
+                    .addComponent(PhoneNumberText)
+                    .addComponent(EmailAddressText))
                 .addContainerGap(19, Short.MAX_VALUE))
         );
         jPanel5Layout.setVerticalGroup(
@@ -391,11 +445,11 @@ public class ReviewOrder extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(jLabel24)
                 .addGap(51, 51, 51)
-                .addComponent(jLabel27)
+                .addComponent(FullNameText)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jLabel28)
+                .addComponent(PhoneNumberText)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jLabel29)
+                .addComponent(EmailAddressText)
                 .addContainerGap(31, Short.MAX_VALUE))
         );
 
@@ -421,10 +475,15 @@ public class ReviewOrder extends javax.swing.JFrame {
                 .addContainerGap(282, Short.MAX_VALUE))
         );
 
-        jButton2.setBackground(new java.awt.Color(89, 185, 255));
-        jButton2.setFont(new java.awt.Font("Eras Bold ITC", 0, 20)); // NOI18N
-        jButton2.setForeground(new java.awt.Color(255, 255, 255));
-        jButton2.setText("CONTINUE TO PAYMENT");
+        goToPaymentButton.setBackground(new java.awt.Color(89, 185, 255));
+        goToPaymentButton.setFont(new java.awt.Font("Eras Bold ITC", 0, 20)); // NOI18N
+        goToPaymentButton.setForeground(new java.awt.Color(255, 255, 255));
+        goToPaymentButton.setText("CONTINUE TO PAYMENT");
+        goToPaymentButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                goToPaymentButtonActionPerformed(evt);
+            }
+        });
 
         jLayeredPane1.setLayer(jPanel2, javax.swing.JLayeredPane.DEFAULT_LAYER);
         jLayeredPane1.setLayer(jLabel4, javax.swing.JLayeredPane.DEFAULT_LAYER);
@@ -434,7 +493,7 @@ public class ReviewOrder extends javax.swing.JFrame {
         jLayeredPane1.setLayer(jPanel4, javax.swing.JLayeredPane.DEFAULT_LAYER);
         jLayeredPane1.setLayer(jPanel5, javax.swing.JLayeredPane.DEFAULT_LAYER);
         jLayeredPane1.setLayer(jPanel6, javax.swing.JLayeredPane.DEFAULT_LAYER);
-        jLayeredPane1.setLayer(jButton2, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        jLayeredPane1.setLayer(goToPaymentButton, javax.swing.JLayeredPane.DEFAULT_LAYER);
 
         javax.swing.GroupLayout jLayeredPane1Layout = new javax.swing.GroupLayout(jLayeredPane1);
         jLayeredPane1.setLayout(jLayeredPane1Layout);
@@ -455,7 +514,7 @@ public class ReviewOrder extends javax.swing.JFrame {
                         .addGroup(jLayeredPane1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jPanel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(jPanel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addComponent(goToPaymentButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addGap(164, 164, 164))
                     .addGroup(jLayeredPane1Layout.createSequentialGroup()
                         .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -482,7 +541,7 @@ public class ReviewOrder extends javax.swing.JFrame {
                         .addGap(18, 18, 18)
                         .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jButton2)))
+                        .addComponent(goToPaymentButton)))
                 .addGap(0, 608, Short.MAX_VALUE))
         );
 
@@ -501,6 +560,67 @@ public class ReviewOrder extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void goToPaymentButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_goToPaymentButtonActionPerformed
+        // TODO add your handling code here:
+        String url = "jdbc:mysql://localhost:3306/boboyuks";
+        String user = "root";
+        String password = "";
+
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            java.sql.Connection con = DriverManager.getConnection(url, user, password);
+            Statement st = con.createStatement();
+
+            String checkIn = CheckInDateText.getText();
+            String checkOut = CheckOutDateText.getText();
+            
+            // Ambil tanggal saat ini dalam format yymmdd
+            SimpleDateFormat sdf = new SimpleDateFormat("yyMMdd");
+            String currentDate = sdf.format(new Date());
+
+            // Generate 4 digit acak
+            Random rand = new Random();
+            String randomNum = String.format("%010d", rand.nextInt(1000000000)); // Menghasilkan angka antara 0 - 9999
+
+            // Gabungkan tanggal saat ini dengan 4 digit acak
+            String reservationId = currentDate + randomNum;
+            
+            // ID user dan harga ditetapkan secara statis untuk contoh ini
+            int idUser = 1;
+            int price = 1000000;
+
+            String query = "INSERT INTO reservation (id_reservation, id_user, start_date, end_date, price) VALUES ("
+            + reservationId + ", " + idUser + ", '" + checkIn + "', '" + checkOut + "', " + price + ")";
+
+            st.executeUpdate(query);
+
+//            JOptionPane.showMessageDialog(null, "Reservation Confirmed with ID: " + reservationId);
+
+            SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd");
+            SimpleDateFormat outputFormat = new SimpleDateFormat("E, d MMM yyyy");
+
+            try {
+                Date checkInDate = inputFormat.parse(checkIn);
+                Date checkOutDate = inputFormat.parse(checkOut);
+
+                String formattedCheckIn = outputFormat.format(checkInDate); // Tanggal dalam format "E, d MMM yyyy"
+                String formattedCheckOut = outputFormat.format(checkOutDate); // Tanggal dalam format "E, d MMM yyyy"
+
+                String dateOfStay = formattedCheckIn + " - " + formattedCheckOut;
+
+                Payment paymentPage = new Payment(reservationId, getUserFullName(), getUserPhoneNumber(), getUserEmailAddress(), dateOfStay, getUserDuration());
+                paymentPage.setVisible(true);
+                this.dispose();
+            } catch (ParseException e) {
+                e.printStackTrace();
+                // Tampilkan error atau handle exception
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error: " + e.getMessage());
+        }
+    }//GEN-LAST:event_goToPaymentButtonActionPerformed
 
     /**
      * @param args the command line arguments
@@ -530,21 +650,25 @@ public class ReviewOrder extends javax.swing.JFrame {
         //</editor-fold>
 
         /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new ReviewOrder().setVisible(true);
-            }
-        });
+//        java.awt.EventQueue.invokeLater(new Runnable() {
+//            public void run() {
+//                new ReviewOrder().setVisible(true);
+//            }
+//        });
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel CheckInDateText;
+    private javax.swing.JLabel CheckOutDateText;
+    private javax.swing.JLabel DurationText;
+    private javax.swing.JLabel EmailAddressText;
+    private javax.swing.JLabel FullNameText;
+    private javax.swing.JLabel PhoneNumberText;
+    private javax.swing.JButton goToPaymentButton;
     private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
     private com.toedter.calendar.JDayChooser jDayChooser1;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
-    private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel14;
     private javax.swing.JLabel jLabel15;
@@ -560,16 +684,12 @@ public class ReviewOrder extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel24;
     private javax.swing.JLabel jLabel25;
     private javax.swing.JLabel jLabel26;
-    private javax.swing.JLabel jLabel27;
-    private javax.swing.JLabel jLabel28;
-    private javax.swing.JLabel jLabel29;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel30;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
-    private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JLayeredPane jLayeredPane1;
     private javax.swing.JPanel jPanel1;
