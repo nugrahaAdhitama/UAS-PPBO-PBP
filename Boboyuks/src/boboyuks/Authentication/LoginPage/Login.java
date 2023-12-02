@@ -1,6 +1,6 @@
 
 package boboyuks.Authentication.LoginPage;
-import boboyuks.Home;
+import boboyuks.Home.Home;
 import com.sun.jdi.connect.spi.Connection;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
