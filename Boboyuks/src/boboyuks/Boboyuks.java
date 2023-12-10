@@ -5,6 +5,7 @@
 package boboyuks;
 
 import boboyuks.Authentication.LoginPage.Login;
+import boboyuks.Home.Home;
 
 /**
  *
@@ -16,6 +17,16 @@ public class Boboyuks {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
+        if (storage.SessionStorage.getLoginStatus() == false) {
+            Login login = new Login();
+//            storage.SessionStorage.setCurrentFrame(login);
+            login.setVisible(true);
+        } else {
+            Home home = new Home();
+//            storage.SessionStorage.setCurrentFrame(home);
+            home.setVisible(true);
+        }
+        
         // TODO code application logic here
 //        Login LoginFrame = new Login();
 //        LoginFrame.setVisible(true);

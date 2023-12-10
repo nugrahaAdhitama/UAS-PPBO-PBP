@@ -4,17 +4,224 @@
  */
 package boboyuks.HotelDetail;
 
+import boboyuks.Profile.Profile;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.GridLayout;
+import java.awt.Image;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.text.NumberFormat;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
+import java.util.List;
+import java.util.Arrays;
+import java.util.Locale;
+import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+
 /**
  *
  * @author Nugraha Adhitama
  */
 public class HotelDetail extends javax.swing.JFrame {
+    
+    private JPopupMenu dropdownMenu;
+    private List<String> facilities;
 
     /**
      * Creates new form HotelDetail2
      */
     public HotelDetail() {
         initComponents();
+        
+        addNavbarAction();
+        jPanel13.setVisible(false);
+        jPanel4.setVisible(false);
+        
+        java.sql.Statement st = new boboyuks.Database.DBConnect().getStatement();
+        String query = "";
+        java.sql.ResultSet rs;
+        
+        query = "SELECT * FROM filteredhotelview WHERE id_hotel = '" + storage.SessionStorage.getHotelId() + "'";
+        
+        try {
+            rs = st.executeQuery(query);
+            
+            if (rs.next()) {
+                String facility = "";
+                facilities = Arrays.asList(rs.getString("facilities").split(", "));
+                
+                for (String f : facilities) {
+                    facility += f + "<br><br>";
+                }
+                
+                String stringHotelFacilities = "<html>" + facility + "</html>";
+                String stringHotelName = rs.getString("name");
+                String stringHotelAddress = rs.getString("city");
+                String stringHotelDesc = rs.getString("description");
+                
+                storage.SessionStorage.bookedHotelData.put("name", stringHotelName);
+                storage.SessionStorage.bookedHotelData.put("city", stringHotelAddress);
+                storage.SessionStorage.bookedHotelData.put("description", stringHotelDesc);
+                storage.SessionStorage.bookedHotelData.put("facilities", stringHotelFacilities);
+                
+                textHotelName.setText(stringHotelName);
+                textHotelAddress.setText(stringHotelAddress);
+                textHotelDescription.setText(stringHotelDesc);
+                textHotelFacilities.setText(stringHotelFacilities);
+            }
+        } catch (Exception e) {}    
+        
+        query = "SELECT * FROM availablerooms WHERE id_hotel = '" + storage.SessionStorage.getHotelId() + "'";
+        
+        try {
+            rs = st.executeQuery(query);
+            if ( !rs.next()) {
+                System.out.println("Hotel not available");
+//                hotelLocationQueryMessage += " is not found!";
+            } else {
+                System.out.println("room found");
+                rs.beforeFirst();
+                int cardCount = 0;
+                int gap = 24; // px
+                while (rs.next()) {
+                    String roomName = rs.getString("name");
+                    JPanel cardPanel = createRoomCards(
+                        rs.getInt("id_room"),
+                        roomName,
+                        rs.getString("bed_type"),
+                        rs.getInt("guest_per_room"),
+                        rs.getInt("price"),
+                        "blake-woolwine-3mlg5BRUifM-unsplash.jpg"
+                    );
+
+                    int cardPositionHeight = 205;
+                    int cardPositionY = 50 + (cardCount * ( gap + cardPositionHeight ) );
+                    cardPanel.setBounds(12, cardPositionY, 968, cardPositionHeight);
+                    cardPanel.setBackground(new java.awt.Color(205, 234, 255));
+    //                        cardPanel.setLayout(new BorderLayout());
+                    jPanel1.add(cardPanel, cardCount);
+
+                    cardCount++;
+                }
+            }
+        } catch (Exception e) {System.out.println(e);}
+    }
+    
+    private JPanel createRoomCards(int id, String name, String bed_type, int guest_per_room, int price, String imagePath) {
+        // Card Panel
+        JPanel cardPanel = new JPanel(new BorderLayout());
+        cardPanel.setBackground(new java.awt.Color(173, 216, 230)); // Blue-ish background color
+        
+        // Image Container (Left)
+        JPanel imageContainer = new JPanel();
+        ImageIcon originalIcon = new ImageIcon("src/images/" + imagePath);
+        Image hotelImage = originalIcon.getImage();
+        int width = 256, height = -1;
+        Image resizedHotelImage = hotelImage.getScaledInstance(width, height, Image.SCALE_SMOOTH);
+        ImageIcon resizedThumbnail = new ImageIcon(resizedHotelImage);
+        imageContainer.add(new JLabel(resizedThumbnail));
+        cardPanel.add(imageContainer, BorderLayout.WEST);
+
+        // Information Panel (Center)
+        JPanel infoPanel = new JPanel(new GridLayout(5, 1));
+
+        // Room Name
+        JLabel hotelName = new JLabel(name);
+        hotelName.setFont(new Font(hotelName.getFont().getFontName(), Font.BOLD, 30));
+        infoPanel.add(hotelName);
+
+        // Room Address
+        JLabel hotelBedType = new JLabel(bed_type);
+        hotelBedType.setFont(new Font(hotelBedType.getFont().getFontName(), Font.BOLD, 18));
+        infoPanel.add(hotelBedType);
+
+        cardPanel.add(infoPanel, BorderLayout.CENTER);
+        
+        // Guest Count
+        JLabel hotelGuestPerRoom = new JLabel(Integer.toString(guest_per_room) + " Guest");
+        hotelGuestPerRoom.setFont(new Font(hotelGuestPerRoom.getFont().getFontName(), Font.BOLD, 18));
+        infoPanel.add(hotelGuestPerRoom);
+
+        cardPanel.add(infoPanel, BorderLayout.CENTER);
+
+        // Price and Search Room Button (Right)
+        JPanel priceAndButtonPanel = new JPanel(new BorderLayout());
+
+        // Price
+        Locale myIndonesianLocale = new Locale("in", "ID");
+        NumberFormat formatRupiah = NumberFormat.getCurrencyInstance(myIndonesianLocale);
+        JLabel priceLabel = new JLabel("<html>" + formatRupiah.format(price) + " /Room /Night</html>");
+        priceLabel.setFont(new Font(priceLabel.getFont().getFontName(), Font.PLAIN, 20));
+        priceAndButtonPanel.add(priceLabel, BorderLayout.NORTH);
+
+        // Search Room Button
+        JButton bookRoomButton = new JButton("Book Now");
+        bookRoomButton.setBackground(new java.awt.Color(89, 185, 255));
+        bookRoomButton.addActionListener((java.awt.event.ActionEvent evt) -> {
+            storage.SessionStorage.bookedHotelData.put("roomId", Integer.toString(id));
+            storage.SessionStorage.bookedHotelData.put("roomName", name);
+            storage.SessionStorage.bookedHotelData.put("roomBedType", bed_type);
+            storage.SessionStorage.bookedHotelData.put("roomGuestPerRoom", Integer.toString(guest_per_room));
+            storage.SessionStorage.bookedHotelData.put("roomPrice", Integer.toString(price));
+            
+            goToBookingHotel();
+        });
+        priceAndButtonPanel.add(bookRoomButton, BorderLayout.SOUTH);
+
+        cardPanel.add(priceAndButtonPanel, BorderLayout.EAST);
+
+        cardPanel.setBackground(new java.awt.Color(205, 234, 255));
+
+        return cardPanel;
+    }
+    
+    private void goToBookingHotel() {
+        boboyuks.BookingHotel.BookingHotel booking = new boboyuks.BookingHotel.BookingHotel();
+        booking.setVisible(true);
+        this.dispose();
+    }
+    
+    private void addNavbarAction() {
+        dropdownMenu = new JPopupMenu();
+        JMenuItem profileMenuItem = new JMenuItem("Profile");
+        JMenuItem logoutMenuItem = new JMenuItem("Log Out");
+        
+        profileMenuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                goToProfile();
+            }
+        });
+        
+        logoutMenuItem.addActionListener(new ActionListener() {
+           @Override
+           public void actionPerformed(ActionEvent e) {
+               goToLogout();
+           }
+        });
+        
+        dropdownMenu.add(profileMenuItem);
+        dropdownMenu.add(logoutMenuItem);
+    }
+    
+    private void goToProfile() {
+        Profile profile = new Profile();
+        profile.setVisible(true);
+        this.dispose();
+    }
+    
+    private void goToLogout() {
+        storage.SessionStorage.setLoginStatus(false);
+        boboyuks.Authentication.LoginPage.Login login = new boboyuks.Authentication.LoginPage.Login();
+        login.setVisible(true);
+        
+        this.dispose();
     }
 
     /**
@@ -52,39 +259,16 @@ public class HotelDetail extends javax.swing.JFrame {
         jTextField4 = new javax.swing.JTextField();
         jButton3 = new javax.swing.JButton();
         jPanel8 = new javax.swing.JPanel();
-        jLabel13 = new javax.swing.JLabel();
-        jLabel14 = new javax.swing.JLabel();
+        textHotelName = new javax.swing.JLabel();
+        textHotelAddress = new javax.swing.JLabel();
         jPanel10 = new javax.swing.JPanel();
         jLabel15 = new javax.swing.JLabel();
-        jLabel16 = new javax.swing.JLabel();
-        jLabel17 = new javax.swing.JLabel();
-        jLabel18 = new javax.swing.JLabel();
-        jLabel19 = new javax.swing.JLabel();
-        jLabel20 = new javax.swing.JLabel();
-        jLabel21 = new javax.swing.JLabel();
+        textHotelFacilities = new javax.swing.JLabel();
         jPanel11 = new javax.swing.JPanel();
         jLabel23 = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
+        textHotelDescription = new javax.swing.JTextArea();
         jPanel1 = new javax.swing.JPanel();
-        jPanel9 = new javax.swing.JPanel();
-        jLabel22 = new javax.swing.JLabel();
-        jLabel24 = new javax.swing.JLabel();
-        jLabel25 = new javax.swing.JLabel();
-        jLabel26 = new javax.swing.JLabel();
-        jLabel27 = new javax.swing.JLabel();
-        jLabel28 = new javax.swing.JLabel();
-        jLabel29 = new javax.swing.JLabel();
-        jButton4 = new javax.swing.JButton();
-        jPanel12 = new javax.swing.JPanel();
-        jLabel30 = new javax.swing.JLabel();
-        jLabel31 = new javax.swing.JLabel();
-        jLabel32 = new javax.swing.JLabel();
-        jLabel33 = new javax.swing.JLabel();
-        jLabel34 = new javax.swing.JLabel();
-        jLabel35 = new javax.swing.JLabel();
-        jLabel36 = new javax.swing.JLabel();
-        jButton5 = new javax.swing.JButton();
         jPanel13 = new javax.swing.JPanel();
         jLabel37 = new javax.swing.JLabel();
         jLabel38 = new javax.swing.JLabel();
@@ -98,7 +282,7 @@ public class HotelDetail extends javax.swing.JFrame {
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
-        jButton1 = new javax.swing.JButton();
+        MyAccountButton = new javax.swing.JButton();
 
         jPanel3.setBackground(new java.awt.Color(23, 97, 150));
 
@@ -344,35 +528,20 @@ public class HotelDetail extends javax.swing.JFrame {
             .addGap(0, 127, Short.MAX_VALUE)
         );
 
-        jLabel13.setFont(new java.awt.Font("Eras Bold ITC", 1, 42)); // NOI18N
-        jLabel13.setText("NAMA HOTEL");
+        textHotelName.setFont(new java.awt.Font("Eras Bold ITC", 1, 42)); // NOI18N
+        textHotelName.setText("NAMA HOTEL");
 
-        jLabel14.setBackground(new java.awt.Color(255, 255, 255));
-        jLabel14.setFont(new java.awt.Font("Eras Bold ITC", 0, 25)); // NOI18N
-        jLabel14.setText("ALAMAT HOTEL");
+        textHotelAddress.setBackground(new java.awt.Color(255, 255, 255));
+        textHotelAddress.setFont(new java.awt.Font("Eras Bold ITC", 0, 25)); // NOI18N
+        textHotelAddress.setText("ALAMAT HOTEL");
 
         jPanel10.setBackground(new java.awt.Color(89, 185, 255));
 
         jLabel15.setFont(new java.awt.Font("Eras Bold ITC", 1, 30)); // NOI18N
         jLabel15.setText("Main Facilities");
 
-        jLabel16.setFont(new java.awt.Font("Eras Medium ITC", 0, 25)); // NOI18N
-        jLabel16.setText("AC");
-
-        jLabel17.setFont(new java.awt.Font("Eras Medium ITC", 0, 25)); // NOI18N
-        jLabel17.setText("Restaurant");
-
-        jLabel18.setFont(new java.awt.Font("Eras Medium ITC", 0, 25)); // NOI18N
-        jLabel18.setText("Parking");
-
-        jLabel19.setFont(new java.awt.Font("Eras Medium ITC", 0, 25)); // NOI18N
-        jLabel19.setText("Elevator");
-
-        jLabel20.setFont(new java.awt.Font("Eras Medium ITC", 0, 25)); // NOI18N
-        jLabel20.setText("Wifi");
-
-        jLabel21.setFont(new java.awt.Font("Eras Medium ITC", 0, 25)); // NOI18N
-        jLabel21.setText("Pool");
+        textHotelFacilities.setFont(new java.awt.Font("Eras Medium ITC", 0, 25)); // NOI18N
+        textHotelFacilities.setText("Restaurant");
 
         javax.swing.GroupLayout jPanel10Layout = new javax.swing.GroupLayout(jPanel10);
         jPanel10.setLayout(jPanel10Layout);
@@ -382,12 +551,7 @@ public class HotelDetail extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel15)
-                    .addComponent(jLabel16, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel17)
-                    .addComponent(jLabel18)
-                    .addComponent(jLabel19)
-                    .addComponent(jLabel20)
-                    .addComponent(jLabel21))
+                    .addComponent(textHotelFacilities))
                 .addContainerGap(244, Short.MAX_VALUE))
         );
         jPanel10Layout.setVerticalGroup(
@@ -396,18 +560,8 @@ public class HotelDetail extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(jLabel15)
                 .addGap(18, 18, 18)
-                .addComponent(jLabel16)
-                .addGap(18, 18, 18)
-                .addComponent(jLabel17)
-                .addGap(18, 18, 18)
-                .addComponent(jLabel18)
-                .addGap(18, 18, 18)
-                .addComponent(jLabel19)
-                .addGap(18, 18, 18)
-                .addComponent(jLabel20)
-                .addGap(18, 18, 18)
-                .addComponent(jLabel21)
-                .addContainerGap(41, Short.MAX_VALUE))
+                .addComponent(textHotelFacilities)
+                .addContainerGap(296, Short.MAX_VALUE))
         );
 
         jPanel11.setBackground(new java.awt.Color(89, 185, 255));
@@ -415,14 +569,14 @@ public class HotelDetail extends javax.swing.JFrame {
         jLabel23.setFont(new java.awt.Font("Eras Bold ITC", 1, 30)); // NOI18N
         jLabel23.setText("About Accomodation");
 
-        jTextArea1.setEditable(false);
-        jTextArea1.setBackground(new java.awt.Color(89, 185, 255));
-        jTextArea1.setColumns(20);
-        jTextArea1.setFont(new java.awt.Font("Segoe UI", 0, 20)); // NOI18N
-        jTextArea1.setLineWrap(true);
-        jTextArea1.setRows(5);
-        jTextArea1.setText("Malaka Hotel Bandung is highly recommended for backpackers who want to get an affordable stay yet comfortable at the same time.\n");
-        jScrollPane2.setViewportView(jTextArea1);
+        textHotelDescription.setEditable(false);
+        textHotelDescription.setBackground(new java.awt.Color(89, 185, 255));
+        textHotelDescription.setColumns(20);
+        textHotelDescription.setFont(new java.awt.Font("Segoe UI", 0, 20)); // NOI18N
+        textHotelDescription.setLineWrap(true);
+        textHotelDescription.setRows(5);
+        textHotelDescription.setText("Malaka Hotel Bandung is highly recommended for backpackers who want to get an affordable stay yet comfortable at the same time.\n");
+        jScrollPane2.setViewportView(textHotelDescription);
 
         javax.swing.GroupLayout jPanel11Layout = new javax.swing.GroupLayout(jPanel11);
         jPanel11.setLayout(jPanel11Layout);
@@ -449,170 +603,6 @@ public class HotelDetail extends javax.swing.JFrame {
 
         jPanel1.setBackground(new java.awt.Color(89, 185, 255));
         jPanel1.setPreferredSize(new java.awt.Dimension(900, 450));
-
-        jLabel22.setIcon(new javax.swing.JLabel() {
-            public javax.swing.Icon getIcon() {
-                try {
-                    return new javax.swing.ImageIcon(
-                        new java.net.URL("https://i.postimg.cc/prFxXVfy/blake-woolwine-3mlg5-BRUif-M-unsplash.jpg")
-                    );
-                } catch (java.net.MalformedURLException e) {
-                }
-                return null;
-            }
-        }.getIcon());
-
-        jLabel24.setFont(new java.awt.Font("Eras Bold ITC", 1, 30)); // NOI18N
-        jLabel24.setText("Superior Tropical Twin Beds Room");
-
-        jLabel25.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
-        jLabel25.setText("3 rooms available");
-
-        jLabel26.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
-        jLabel26.setText("1 Twin Bed");
-
-        jLabel27.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
-        jLabel27.setText("2 Guest");
-
-        jLabel28.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
-        jLabel28.setText("15.0 m²");
-
-        jLabel29.setFont(new java.awt.Font("Segoe UI", 0, 20)); // NOI18N
-        jLabel29.setText("Rp. 550,000 / room / night");
-
-        jButton4.setBackground(new java.awt.Color(89, 185, 255));
-        jButton4.setFont(new java.awt.Font("Eras Bold ITC", 1, 20)); // NOI18N
-        jButton4.setText("Book Now");
-
-        javax.swing.GroupLayout jPanel9Layout = new javax.swing.GroupLayout(jPanel9);
-        jPanel9.setLayout(jPanel9Layout);
-        jPanel9Layout.setHorizontalGroup(
-            jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel9Layout.createSequentialGroup()
-                .addGap(31, 31, 31)
-                .addComponent(jLabel22, javax.swing.GroupLayout.PREFERRED_SIZE, 199, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(jPanel9Layout.createSequentialGroup()
-                        .addComponent(jLabel26)
-                        .addGap(386, 386, 386)
-                        .addComponent(jLabel29))
-                    .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addGroup(jPanel9Layout.createSequentialGroup()
-                            .addComponent(jLabel24)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                            .addComponent(jLabel25))
-                        .addComponent(jLabel27)
-                        .addGroup(jPanel9Layout.createSequentialGroup()
-                            .addComponent(jLabel28)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jButton4))))
-                .addContainerGap(15, Short.MAX_VALUE))
-        );
-        jPanel9Layout.setVerticalGroup(
-            jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel9Layout.createSequentialGroup()
-                .addGap(35, 35, 35)
-                .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel22, javax.swing.GroupLayout.PREFERRED_SIZE, 139, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(jPanel9Layout.createSequentialGroup()
-                        .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel24)
-                            .addComponent(jLabel25))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel26)
-                            .addComponent(jLabel29))
-                        .addGap(14, 14, 14)
-                        .addComponent(jLabel27)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel28)
-                            .addComponent(jButton4))))
-                .addContainerGap(31, Short.MAX_VALUE))
-        );
-
-        jLabel30.setIcon(new javax.swing.JLabel() {
-            public javax.swing.Icon getIcon() {
-                try {
-                    return new javax.swing.ImageIcon(
-                        new java.net.URL("https://i.postimg.cc/prFxXVfy/blake-woolwine-3mlg5-BRUif-M-unsplash.jpg")
-                    );
-                } catch (java.net.MalformedURLException e) {
-                }
-                return null;
-            }
-        }.getIcon());
-
-        jLabel31.setFont(new java.awt.Font("Eras Bold ITC", 1, 30)); // NOI18N
-        jLabel31.setText("Superior Tropical Twin Beds Room");
-
-        jLabel32.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
-        jLabel32.setText("3 rooms available");
-
-        jLabel33.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
-        jLabel33.setText("1 Twin Bed");
-
-        jLabel34.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
-        jLabel34.setText("2 Guest");
-
-        jLabel35.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
-        jLabel35.setText("15.0 m²");
-
-        jLabel36.setFont(new java.awt.Font("Segoe UI", 0, 20)); // NOI18N
-        jLabel36.setText("Rp. 550,000 / room / night");
-
-        jButton5.setBackground(new java.awt.Color(89, 185, 255));
-        jButton5.setFont(new java.awt.Font("Eras Bold ITC", 1, 20)); // NOI18N
-        jButton5.setText("Book Now");
-
-        javax.swing.GroupLayout jPanel12Layout = new javax.swing.GroupLayout(jPanel12);
-        jPanel12.setLayout(jPanel12Layout);
-        jPanel12Layout.setHorizontalGroup(
-            jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel12Layout.createSequentialGroup()
-                .addGap(31, 31, 31)
-                .addComponent(jLabel30, javax.swing.GroupLayout.PREFERRED_SIZE, 199, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addGroup(jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(jPanel12Layout.createSequentialGroup()
-                        .addComponent(jLabel33)
-                        .addGap(386, 386, 386)
-                        .addComponent(jLabel36))
-                    .addGroup(jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addGroup(jPanel12Layout.createSequentialGroup()
-                            .addComponent(jLabel31)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                            .addComponent(jLabel32))
-                        .addComponent(jLabel34)
-                        .addGroup(jPanel12Layout.createSequentialGroup()
-                            .addComponent(jLabel35)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jButton5))))
-                .addContainerGap(15, Short.MAX_VALUE))
-        );
-        jPanel12Layout.setVerticalGroup(
-            jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel12Layout.createSequentialGroup()
-                .addGap(35, 35, 35)
-                .addGroup(jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel30, javax.swing.GroupLayout.PREFERRED_SIZE, 139, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(jPanel12Layout.createSequentialGroup()
-                        .addGroup(jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel31)
-                            .addComponent(jLabel32))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel33)
-                            .addComponent(jLabel36))
-                        .addGap(14, 14, 14)
-                        .addComponent(jLabel34)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel35)
-                            .addComponent(jButton5))))
-                .addContainerGap(31, Short.MAX_VALUE))
-        );
 
         jLabel37.setIcon(new javax.swing.JLabel() {
             public javax.swing.Icon getIcon() {
@@ -702,28 +692,21 @@ public class HotelDetail extends javax.swing.JFrame {
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGap(14, 14, 14)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanel9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jPanel12, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jPanel13, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(jPanel13, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(17, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(25, 25, 25)
-                .addComponent(jPanel9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(25, 25, 25)
-                .addComponent(jPanel12, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(25, 25, 25)
+                .addGap(531, 531, 531)
                 .addComponent(jPanel13, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(31, Short.MAX_VALUE))
+                .addContainerGap(16, Short.MAX_VALUE))
         );
 
         jLayeredPane1.setLayer(jPanel4, javax.swing.JLayeredPane.DEFAULT_LAYER);
         jLayeredPane1.setLayer(jPanel8, javax.swing.JLayeredPane.DEFAULT_LAYER);
-        jLayeredPane1.setLayer(jLabel13, javax.swing.JLayeredPane.DEFAULT_LAYER);
-        jLayeredPane1.setLayer(jLabel14, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        jLayeredPane1.setLayer(textHotelName, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        jLayeredPane1.setLayer(textHotelAddress, javax.swing.JLayeredPane.DEFAULT_LAYER);
         jLayeredPane1.setLayer(jPanel10, javax.swing.JLayeredPane.DEFAULT_LAYER);
         jLayeredPane1.setLayer(jPanel11, javax.swing.JLayeredPane.DEFAULT_LAYER);
         jLayeredPane1.setLayer(jPanel1, javax.swing.JLayeredPane.DEFAULT_LAYER);
@@ -733,7 +716,7 @@ public class HotelDetail extends javax.swing.JFrame {
         jLayeredPane1Layout.setHorizontalGroup(
             jLayeredPane1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jLayeredPane1Layout.createSequentialGroup()
-                .addGap(24, 24, 24)
+                .addGap(35, 35, 35)
                 .addGroup(jLayeredPane1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jPanel8, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jPanel10, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -742,10 +725,10 @@ public class HotelDetail extends javax.swing.JFrame {
                         .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 999, Short.MAX_VALUE)
                         .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jLayeredPane1Layout.createSequentialGroup()
                             .addGap(6, 6, 6)
-                            .addComponent(jLabel13)
+                            .addComponent(textHotelName)
                             .addGap(187, 187, 187)
                             .addGroup(jLayeredPane1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(jLabel14, javax.swing.GroupLayout.PREFERRED_SIZE, 441, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(textHotelAddress, javax.swing.GroupLayout.PREFERRED_SIZE, 441, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addComponent(jPanel11, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))))
                 .addContainerGap(66, Short.MAX_VALUE))
         );
@@ -757,15 +740,15 @@ public class HotelDetail extends javax.swing.JFrame {
                 .addComponent(jPanel8, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jLayeredPane1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel13)
-                    .addComponent(jLabel14))
+                    .addComponent(textHotelName)
+                    .addComponent(textHotelAddress))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jLayeredPane1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jPanel10, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jPanel11, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 775, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 4400, Short.MAX_VALUE))
+                .addGap(0, 4655, Short.MAX_VALUE))
         );
 
         jScrollPane1.setViewportView(jLayeredPane1);
@@ -775,6 +758,11 @@ public class HotelDetail extends javax.swing.JFrame {
         jLabel1.setFont(new java.awt.Font("Eras Bold ITC", 1, 47)); // NOI18N
         jLabel1.setForeground(new java.awt.Color(255, 255, 255));
         jLabel1.setText("BOBOYUKS");
+        jLabel1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jLabel1MouseClicked(evt);
+            }
+        });
 
         jLabel2.setFont(new java.awt.Font("Segoe UI", 0, 28)); // NOI18N
         jLabel2.setForeground(new java.awt.Color(255, 255, 255));
@@ -783,11 +771,21 @@ public class HotelDetail extends javax.swing.JFrame {
         jLabel3.setFont(new java.awt.Font("Segoe UI", 0, 28)); // NOI18N
         jLabel3.setForeground(new java.awt.Color(255, 255, 255));
         jLabel3.setText("My Order");
+        jLabel3.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jLabel3MouseClicked(evt);
+            }
+        });
 
-        jButton1.setBackground(new java.awt.Color(89, 185, 255));
-        jButton1.setFont(new java.awt.Font("Segoe UI", 0, 28)); // NOI18N
-        jButton1.setForeground(new java.awt.Color(255, 255, 255));
-        jButton1.setText("My Account");
+        MyAccountButton.setBackground(new java.awt.Color(89, 185, 255));
+        MyAccountButton.setFont(new java.awt.Font("Segoe UI", 0, 28)); // NOI18N
+        MyAccountButton.setForeground(new java.awt.Color(255, 255, 255));
+        MyAccountButton.setText("My Account");
+        MyAccountButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MyAccountButtonActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -801,7 +799,7 @@ public class HotelDetail extends javax.swing.JFrame {
                 .addGap(52, 52, 52)
                 .addComponent(jLabel3)
                 .addGap(58, 58, 58)
-                .addComponent(jButton1)
+                .addComponent(MyAccountButton)
                 .addGap(46, 46, 46))
         );
         jPanel2Layout.setVerticalGroup(
@@ -812,7 +810,7 @@ public class HotelDetail extends javax.swing.JFrame {
                     .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(jLabel2)
                         .addComponent(jLabel3)
-                        .addComponent(jButton1))
+                        .addComponent(MyAccountButton))
                     .addComponent(jLabel1))
                 .addContainerGap(37, Short.MAX_VALUE))
         );
@@ -844,6 +842,22 @@ public class HotelDetail extends javax.swing.JFrame {
     private void jComboBox2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBox2ActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_jComboBox2ActionPerformed
+
+    private void MyAccountButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MyAccountButtonActionPerformed
+        dropdownMenu.show(MyAccountButton, 0, MyAccountButton.getHeight());
+    }//GEN-LAST:event_MyAccountButtonActionPerformed
+
+    private void jLabel3MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel3MouseClicked
+        boboyuks.Order.MyOrder order = new boboyuks.Order.MyOrder();
+        order.setVisible(true);
+        this.dispose();
+    }//GEN-LAST:event_jLabel3MouseClicked
+
+    private void jLabel1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel1MouseClicked
+        boboyuks.Home.Home home = new boboyuks.Home.Home();
+        home.setVisible(true);
+        this.dispose();
+    }//GEN-LAST:event_jLabel1MouseClicked
 
     /**
      * @param args the command line arguments
@@ -882,11 +896,9 @@ public class HotelDetail extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
+    private javax.swing.JButton MyAccountButton;
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
-    private javax.swing.JButton jButton4;
-    private javax.swing.JButton jButton5;
     private javax.swing.JButton jButton6;
     private javax.swing.JComboBox<String> jComboBox1;
     private javax.swing.JComboBox<String> jComboBox2;
@@ -894,32 +906,10 @@ public class HotelDetail extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
-    private javax.swing.JLabel jLabel13;
-    private javax.swing.JLabel jLabel14;
     private javax.swing.JLabel jLabel15;
-    private javax.swing.JLabel jLabel16;
-    private javax.swing.JLabel jLabel17;
-    private javax.swing.JLabel jLabel18;
-    private javax.swing.JLabel jLabel19;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel20;
-    private javax.swing.JLabel jLabel21;
-    private javax.swing.JLabel jLabel22;
     private javax.swing.JLabel jLabel23;
-    private javax.swing.JLabel jLabel24;
-    private javax.swing.JLabel jLabel25;
-    private javax.swing.JLabel jLabel26;
-    private javax.swing.JLabel jLabel27;
-    private javax.swing.JLabel jLabel28;
-    private javax.swing.JLabel jLabel29;
     private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel30;
-    private javax.swing.JLabel jLabel31;
-    private javax.swing.JLabel jLabel32;
-    private javax.swing.JLabel jLabel33;
-    private javax.swing.JLabel jLabel34;
-    private javax.swing.JLabel jLabel35;
-    private javax.swing.JLabel jLabel36;
     private javax.swing.JLabel jLabel37;
     private javax.swing.JLabel jLabel38;
     private javax.swing.JLabel jLabel39;
@@ -938,7 +928,6 @@ public class HotelDetail extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel10;
     private javax.swing.JPanel jPanel11;
-    private javax.swing.JPanel jPanel12;
     private javax.swing.JPanel jPanel13;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
@@ -947,13 +936,15 @@ public class HotelDetail extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
     private javax.swing.JPanel jPanel8;
-    private javax.swing.JPanel jPanel9;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JTextArea jTextArea1;
     private javax.swing.JTextField jTextField1;
     private javax.swing.JTextField jTextField2;
     private javax.swing.JTextField jTextField3;
     private javax.swing.JTextField jTextField4;
+    private javax.swing.JLabel textHotelAddress;
+    private javax.swing.JTextArea textHotelDescription;
+    private javax.swing.JLabel textHotelFacilities;
+    private javax.swing.JLabel textHotelName;
     // End of variables declaration//GEN-END:variables
 }

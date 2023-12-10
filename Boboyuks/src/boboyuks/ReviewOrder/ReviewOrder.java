@@ -6,6 +6,7 @@ package boboyuks.ReviewOrder;
 import boboyuks.Payment.Payment;
 import java.sql.DriverManager;
 import java.sql.Statement;
+import java.text.NumberFormat;
 import java.text.ParseException;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -13,6 +14,8 @@ import java.util.Date;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Calendar;
+import java.util.Locale;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -21,17 +24,17 @@ import java.util.concurrent.TimeUnit;
  * @author Nugraha Adhitama
  */
 public class ReviewOrder extends javax.swing.JFrame {
+    
+    private int durationOfStay;
 
     /**
      * Creates new form ReviewOrder
      */
     public ReviewOrder(String checkInDateStr, String checkOutDateStr, String fullNameInput, String phoneNumberInput, String emailAddressInput) {
+        int roomAmount = Integer.parseInt(storage.SessionStorage.bookedHotelData.get("room_amount"));
+        int roomPrice = Integer.parseInt(storage.SessionStorage.bookedHotelData.get("roomPrice"));
+        
         initComponents();
-        CheckInDateText.setText(checkInDateStr);
-        CheckOutDateText.setText(checkOutDateStr);
-        FullNameText.setText(fullNameInput);
-        PhoneNumberText.setText(phoneNumberInput);
-        EmailAddressText.setText(emailAddressInput);
         
         try {
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -41,11 +44,41 @@ public class ReviewOrder extends javax.swing.JFrame {
             long duration = checkOut.getTime() - checkIn.getTime();
             long daysBetween = TimeUnit.DAYS.convert(duration, TimeUnit.MILLISECONDS);
             
-            DurationText.setText(daysBetween + " Night(s)");
+            durationOfStay = (int) daysBetween;
+            
+            DurationText.setText(Integer.toString(durationOfStay) + " Night(s)");
         } catch(Exception e) {
             e.printStackTrace();
             DurationText.setText("Error in date parsing!");
         }
+        
+        textHotelName.setText(storage.SessionStorage.bookedHotelData.get("name"));
+        textHotelRoomNameDetail.setText(
+                "(" + roomAmount + "x) "
+                + storage.SessionStorage.bookedHotelData.get("roomName")
+                + " " + durationOfStay + " Night"
+        );
+        
+        Locale myIndonesianLocale = new Locale("in", "ID");
+        NumberFormat formatRupiah = NumberFormat.getCurrencyInstance(myIndonesianLocale);
+        
+        
+        roomPrice = roomPrice * roomAmount * durationOfStay;
+        int taxes = (int) Math.round(roomPrice * 0.13);
+        textHotelRoomPrice.setText(formatRupiah.format(roomPrice));
+        textTaxes.setText(formatRupiah.format(taxes));
+        textTotalRoomPrice.setText(formatRupiah.format(roomPrice + taxes));
+        
+        textGuestPerRoom.setText(
+                storage.SessionStorage.bookedHotelData.get("guest_per_room")
+                + " Adults"
+        );
+        
+        CheckInDateText.setText(checkInDateStr);
+        CheckOutDateText.setText(checkOutDateStr);
+        FullNameText.setText(fullNameInput);
+        PhoneNumberText.setText(phoneNumberInput);
+        EmailAddressText.setText(emailAddressInput);
         
     }
     
@@ -91,7 +124,7 @@ public class ReviewOrder extends javax.swing.JFrame {
         jLabel4 = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
         jLabel5 = new javax.swing.JLabel();
-        jLabel6 = new javax.swing.JLabel();
+        textHotelName = new javax.swing.JLabel();
         jLabel7 = new javax.swing.JLabel();
         CheckInDateText = new javax.swing.JLabel();
         jLabel9 = new javax.swing.JLabel();
@@ -102,19 +135,19 @@ public class ReviewOrder extends javax.swing.JFrame {
         jLabel13 = new javax.swing.JLabel();
         jLabel14 = new javax.swing.JLabel();
         jLabel15 = new javax.swing.JLabel();
-        jLabel16 = new javax.swing.JLabel();
+        textGuestPerRoom = new javax.swing.JLabel();
         jLabel17 = new javax.swing.JLabel();
         jLabel25 = new javax.swing.JLabel();
         jLabel26 = new javax.swing.JLabel();
         jLabel18 = new javax.swing.JLabel();
         jPanel4 = new javax.swing.JPanel();
         jLabel19 = new javax.swing.JLabel();
-        jLabel20 = new javax.swing.JLabel();
-        jLabel21 = new javax.swing.JLabel();
+        textTotalRoomPrice = new javax.swing.JLabel();
+        textHotelRoomPrice = new javax.swing.JLabel();
         jScrollPane3 = new javax.swing.JScrollPane();
-        jTextPane1 = new javax.swing.JTextPane();
+        textHotelRoomNameDetail = new javax.swing.JTextPane();
         jLabel22 = new javax.swing.JLabel();
-        jLabel23 = new javax.swing.JLabel();
+        textTaxes = new javax.swing.JLabel();
         jPanel5 = new javax.swing.JPanel();
         jLabel24 = new javax.swing.JLabel();
         FullNameText = new javax.swing.JLabel();
@@ -190,8 +223,8 @@ public class ReviewOrder extends javax.swing.JFrame {
             }
         }.getIcon());
 
-        jLabel6.setFont(new java.awt.Font("Eras Medium ITC", 0, 25)); // NOI18N
-        jLabel6.setText("Malaka Hotel Bandung");
+        textHotelName.setFont(new java.awt.Font("Eras Medium ITC", 0, 25)); // NOI18N
+        textHotelName.setText("Malaka Hotel Bandung");
 
         jLabel7.setFont(new java.awt.Font("Eras Medium ITC", 0, 20)); // NOI18N
         jLabel7.setText("Check-In");
@@ -221,7 +254,7 @@ public class ReviewOrder extends javax.swing.JFrame {
                 .addGap(18, 18, 18)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(jLabel6)
+                        .addComponent(textHotelName)
                         .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -241,7 +274,7 @@ public class ReviewOrder extends javax.swing.JFrame {
                 .addGap(24, 24, 24)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(jLabel6)
+                        .addComponent(textHotelName)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel7)
@@ -269,8 +302,8 @@ public class ReviewOrder extends javax.swing.JFrame {
         jLabel15.setFont(new java.awt.Font("Eras Medium ITC", 0, 25)); // NOI18N
         jLabel15.setText("Bed Type");
 
-        jLabel16.setFont(new java.awt.Font("Eras Medium ITC", 0, 25)); // NOI18N
-        jLabel16.setText("2 Adults");
+        textGuestPerRoom.setFont(new java.awt.Font("Eras Medium ITC", 0, 25)); // NOI18N
+        textGuestPerRoom.setText("2 Adults");
 
         jLabel17.setFont(new java.awt.Font("Eras Medium ITC", 0, 25)); // NOI18N
         jLabel17.setText("Twin Bed");
@@ -319,7 +352,7 @@ public class ReviewOrder extends javax.swing.JFrame {
                             .addComponent(jLabel15))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel16)
+                            .addComponent(textGuestPerRoom)
                             .addComponent(jLabel17))
                         .addGap(107, 107, 107)
                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -344,7 +377,7 @@ public class ReviewOrder extends javax.swing.JFrame {
                             .addGap(18, 18, 18)
                             .addComponent(jLabel26)))
                     .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addComponent(jLabel16)
+                        .addComponent(textGuestPerRoom)
                         .addGap(18, 18, 18)
                         .addComponent(jLabel17)))
                 .addContainerGap(31, Short.MAX_VALUE))
@@ -358,22 +391,22 @@ public class ReviewOrder extends javax.swing.JFrame {
         jLabel19.setFont(new java.awt.Font("Eras Bold ITC", 1, 28)); // NOI18N
         jLabel19.setText("Total");
 
-        jLabel20.setFont(new java.awt.Font("Eras Bold ITC", 1, 28)); // NOI18N
-        jLabel20.setText("Rp. 620.293");
+        textTotalRoomPrice.setFont(new java.awt.Font("Eras Bold ITC", 1, 28)); // NOI18N
+        textTotalRoomPrice.setText("Rp. 620.293");
 
-        jLabel21.setFont(new java.awt.Font("Eras Medium ITC", 0, 28)); // NOI18N
-        jLabel21.setText("Rp. 550.000");
+        textHotelRoomPrice.setFont(new java.awt.Font("Eras Medium ITC", 0, 28)); // NOI18N
+        textHotelRoomPrice.setText("Rp. 550.000");
 
-        jTextPane1.setBackground(new java.awt.Color(89, 185, 255));
-        jTextPane1.setFont(new java.awt.Font("Segoe UI", 0, 28)); // NOI18N
-        jTextPane1.setText("(1x)Superior Tropical Twin Beds Room 1 Night");
-        jScrollPane3.setViewportView(jTextPane1);
+        textHotelRoomNameDetail.setBackground(new java.awt.Color(89, 185, 255));
+        textHotelRoomNameDetail.setFont(new java.awt.Font("Segoe UI", 0, 28)); // NOI18N
+        textHotelRoomNameDetail.setText("(1x)Superior Tropical Twin Beds Room 1 Night");
+        jScrollPane3.setViewportView(textHotelRoomNameDetail);
 
         jLabel22.setFont(new java.awt.Font("Eras Medium ITC", 0, 28)); // NOI18N
         jLabel22.setText("Taxes and Fees");
 
-        jLabel23.setFont(new java.awt.Font("Eras Medium ITC", 0, 28)); // NOI18N
-        jLabel23.setText("Rp. 70.293");
+        textTaxes.setFont(new java.awt.Font("Eras Medium ITC", 0, 28)); // NOI18N
+        textTaxes.setText("Rp. 70.293");
 
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
@@ -387,9 +420,9 @@ public class ReviewOrder extends javax.swing.JFrame {
                     .addComponent(jLabel22))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel20)
-                    .addComponent(jLabel21)
-                    .addComponent(jLabel23))
+                    .addComponent(textTotalRoomPrice)
+                    .addComponent(textHotelRoomPrice)
+                    .addComponent(textTaxes))
                 .addGap(28, 28, 28))
         );
         jPanel4Layout.setVerticalGroup(
@@ -398,17 +431,17 @@ public class ReviewOrder extends javax.swing.JFrame {
                 .addGap(24, 24, 24)
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel19)
-                    .addComponent(jLabel20))
+                    .addComponent(textTotalRoomPrice))
                 .addGap(18, 18, 18)
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(jPanel4Layout.createSequentialGroup()
                         .addGap(25, 25, 25)
-                        .addComponent(jLabel21)))
+                        .addComponent(textHotelRoomPrice)))
                 .addGap(18, 18, 18)
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel22)
-                    .addComponent(jLabel23))
+                    .addComponent(textTaxes))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -563,14 +596,10 @@ public class ReviewOrder extends javax.swing.JFrame {
 
     private void goToPaymentButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_goToPaymentButtonActionPerformed
         // TODO add your handling code here:
-        String url = "jdbc:mysql://localhost:3306/boboyuks";
-        String user = "root";
-        String password = "";
-
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            java.sql.Connection con = DriverManager.getConnection(url, user, password);
-            Statement st = con.createStatement();
+            
+            java.sql.Statement st = new boboyuks.Database.DBConnect().getStatement();
+            java.sql.ResultSet rs = storage.SessionStorage.getHotelSearchResult();
 
             String checkIn = CheckInDateText.getText();
             String checkOut = CheckOutDateText.getText();
@@ -587,8 +616,9 @@ public class ReviewOrder extends javax.swing.JFrame {
             String reservationId = currentDate + randomNum;
             
             // ID user dan harga ditetapkan secara statis untuk contoh ini
-            int idUser = 1;
-            int price = 1000000;
+//            int idUser = 1;
+            int idUser = storage.SessionStorage.getUserId();
+            int price = Integer.parseInt(storage.SessionStorage.bookedHotelData.get("totalPrice"));
 
             String query = "INSERT INTO reservation (id_reservation, id_user, start_date, end_date, price) VALUES ("
             + reservationId + ", " + idUser + ", '" + checkIn + "', '" + checkOut + "', " + price + ")";
@@ -672,15 +702,11 @@ public class ReviewOrder extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel14;
     private javax.swing.JLabel jLabel15;
-    private javax.swing.JLabel jLabel16;
     private javax.swing.JLabel jLabel17;
     private javax.swing.JLabel jLabel18;
     private javax.swing.JLabel jLabel19;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel20;
-    private javax.swing.JLabel jLabel21;
     private javax.swing.JLabel jLabel22;
-    private javax.swing.JLabel jLabel23;
     private javax.swing.JLabel jLabel24;
     private javax.swing.JLabel jLabel25;
     private javax.swing.JLabel jLabel26;
@@ -688,7 +714,6 @@ public class ReviewOrder extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel30;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JLayeredPane jLayeredPane1;
@@ -700,6 +725,11 @@ public class ReviewOrder extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel6;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane3;
-    private javax.swing.JTextPane jTextPane1;
+    private javax.swing.JLabel textGuestPerRoom;
+    private javax.swing.JLabel textHotelName;
+    private javax.swing.JTextPane textHotelRoomNameDetail;
+    private javax.swing.JLabel textHotelRoomPrice;
+    private javax.swing.JLabel textTaxes;
+    private javax.swing.JLabel textTotalRoomPrice;
     // End of variables declaration//GEN-END:variables
 }

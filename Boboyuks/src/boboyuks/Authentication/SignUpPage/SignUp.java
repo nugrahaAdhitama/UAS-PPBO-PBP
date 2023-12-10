@@ -4,6 +4,7 @@
  */
 package boboyuks.Authentication.SignUpPage;
 
+import boboyuks.Authentication.LoginPage.Login;
 import com.sun.jdi.connect.spi.Connection;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -51,7 +52,7 @@ public class SignUp extends javax.swing.JFrame {
         passwords = new javax.swing.JPasswordField();
         SignUpBtn = new javax.swing.JButton();
         jLabel6 = new javax.swing.JLabel();
-        jButton2 = new javax.swing.JButton();
+        LoginBtn = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Sign Up");
@@ -104,11 +105,11 @@ public class SignUp extends javax.swing.JFrame {
 
         jLabel6.setText("I have an account");
 
-        jButton2.setForeground(new java.awt.Color(255, 51, 51));
-        jButton2.setText("Login");
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
+        LoginBtn.setForeground(new java.awt.Color(255, 51, 51));
+        LoginBtn.setText("Login");
+        LoginBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
+                LoginBtnActionPerformed(evt);
             }
         });
 
@@ -117,7 +118,7 @@ public class SignUp extends javax.swing.JFrame {
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
-                .addContainerGap(160, Short.MAX_VALUE)
+                .addContainerGap(159, Short.MAX_VALUE)
                 .addComponent(jLabel1)
                 .addGap(131, 131, 131))
             .addGroup(jPanel3Layout.createSequentialGroup()
@@ -126,7 +127,7 @@ public class SignUp extends javax.swing.JFrame {
                     .addGroup(jPanel3Layout.createSequentialGroup()
                         .addComponent(jLabel6)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 84, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(LoginBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 84, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                         .addComponent(passwords)
                         .addComponent(fname)
@@ -165,7 +166,7 @@ public class SignUp extends javax.swing.JFrame {
                 .addGap(18, 18, 18)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel6)
-                    .addComponent(jButton2))
+                    .addComponent(LoginBtn))
                 .addContainerGap(50, Short.MAX_VALUE))
         );
 
@@ -222,8 +223,8 @@ public class SignUp extends javax.swing.JFrame {
  String fullName, email, phone, password, query;
         String SUrl, SUser, SPass;
         SUrl = "jdbc:MYSQL://localhost:3306/boboyuks";
-        SUser = "root";
-        SPass = "";
+        SUser = "PBO";
+        SPass = "root";
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             java.sql.Connection con = DriverManager.getConnection(SUrl, SUser, SPass);
@@ -237,8 +238,21 @@ public class SignUp extends javax.swing.JFrame {
             }else if("".equals(passwords.getText())){
                 JOptionPane.showMessageDialog(new JFrame(), "Password is required", "Error", JOptionPane.ERROR_MESSAGE);
             }else{
-                fullName = fname.getText();
                 email = emailAddress.getText();
+                
+                query = "SELECT COUNT(*) FROM user WHERE email = '" + email + "'";
+                
+                ResultSet result = st.executeQuery(query);
+                
+                if ( result.next() ) {
+                    int count = result.getInt(1);
+                    if ( count > 0 ) {
+                        JOptionPane.showMessageDialog(new JFrame(), "Email already exists!", "Error", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+                }
+                
+                fullName = fname.getText();
                 phone = phoneNumber.getText();
                 password = hashPassword(passwords.getText());
 
@@ -265,9 +279,12 @@ public class SignUp extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_SignUpBtnActionPerformed
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jButton2ActionPerformed
+    private void LoginBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_LoginBtnActionPerformed
+        Login login = new Login();
+        login.setVisible(true);
+        
+        this.dispose();
+    }//GEN-LAST:event_LoginBtnActionPerformed
 
     /**
      * @param args the command line arguments
@@ -305,10 +322,10 @@ public class SignUp extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton LoginBtn;
     private javax.swing.JButton SignUpBtn;
     private javax.swing.JTextField emailAddress;
     private javax.swing.JTextField fname;
-    private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
