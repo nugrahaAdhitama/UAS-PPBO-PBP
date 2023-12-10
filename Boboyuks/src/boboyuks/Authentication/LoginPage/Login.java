@@ -1,7 +1,10 @@
 
 package boboyuks.Authentication.LoginPage;
+
+import boboyuks.Authentication.SignUpPage.SignUp;
 import boboyuks.Home.Home;
 import com.sun.jdi.connect.spi.Connection;
+import java.awt.event.KeyEvent;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.DriverManager;
@@ -35,7 +38,7 @@ public class Login extends javax.swing.JFrame {
         password = new javax.swing.JPasswordField();
         LoginBtn = new javax.swing.JButton();
         jLabel4 = new javax.swing.JLabel();
-        jButton2 = new javax.swing.JButton();
+        SignUpBtn = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("LOGIN");
@@ -85,6 +88,12 @@ public class Login extends javax.swing.JFrame {
         jLabel3.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         jLabel3.setText("Password");
 
+        password.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                passwordKeyPressed(evt);
+            }
+        });
+
         LoginBtn.setBackground(new java.awt.Color(0, 102, 102));
         LoginBtn.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         LoginBtn.setForeground(new java.awt.Color(255, 255, 255));
@@ -97,12 +106,12 @@ public class Login extends javax.swing.JFrame {
 
         jLabel4.setText("I don't have an account");
 
-        jButton2.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        jButton2.setForeground(new java.awt.Color(255, 51, 51));
-        jButton2.setText("Sign Up");
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
+        SignUpBtn.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        SignUpBtn.setForeground(new java.awt.Color(255, 51, 51));
+        SignUpBtn.setText("Sign Up");
+        SignUpBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
+                SignUpBtnActionPerformed(evt);
             }
         });
 
@@ -127,7 +136,7 @@ public class Login extends javax.swing.JFrame {
                             .addGroup(LeftLayout.createSequentialGroup()
                                 .addComponent(jLabel4)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jButton2)))))
+                                .addComponent(SignUpBtn)))))
                 .addContainerGap(27, Short.MAX_VALUE))
         );
         LeftLayout.setVerticalGroup(
@@ -148,7 +157,7 @@ public class Login extends javax.swing.JFrame {
                 .addGap(33, 33, 33)
                 .addGroup(LeftLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel4)
-                    .addComponent(jButton2))
+                    .addComponent(SignUpBtn))
                 .addContainerGap(77, Short.MAX_VALUE))
         );
 
@@ -169,9 +178,12 @@ public class Login extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+    private void SignUpBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_SignUpBtnActionPerformed
+        SignUp signUp = new SignUp();
+        signUp.setVisible(true);
         
-    }//GEN-LAST:event_jButton2ActionPerformed
+        this.dispose();
+    }//GEN-LAST:event_SignUpBtnActionPerformed
 
     private String hashPassword(String password) throws NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance("SHA-256");
@@ -185,12 +197,22 @@ public class Login extends javax.swing.JFrame {
     }
     
     private void LoginBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_LoginBtnActionPerformed
-        // TODO add your handling code here:
+        doLogin();
+    }//GEN-LAST:event_LoginBtnActionPerformed
+
+    private void passwordKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_passwordKeyPressed
+        if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
+            doLogin();
+        }
+    }//GEN-LAST:event_passwordKeyPressed
+
+    private void doLogin() {
         String Email, Password, query, passDb = null;
+        int userId = 0;
         String SUrl, SUser, SPass;
         SUrl = "jdbc:MYSQL://localhost:3306/boboyuks";
-        SUser = "root";
-        SPass = "";
+        SUser = "PBO";
+        SPass = "root";
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             java.sql.Connection con = DriverManager.getConnection(SUrl, SUser, SPass);
@@ -206,9 +228,13 @@ public class Login extends javax.swing.JFrame {
                 query = "SELECT * FROM user WHERE email= '"+Email+"'";
                 ResultSet rs = st.executeQuery(query);
                 if(rs.next()){
+                    userId = rs.getInt("id_user");
                     passDb = rs.getString("password");
                 }
                 if(Password.equals(passDb)){
+                    storage.SessionStorage.setUserId(userId);
+                    storage.SessionStorage.setLoginStatus(true);
+                            
                     Home HomeFrame = new Home();
                     HomeFrame.setVisible(true);
                     HomeFrame.pack();
@@ -222,8 +248,8 @@ public class Login extends javax.swing.JFrame {
         } catch(Exception e) {
             System.out.println("Error!" + e.getMessage());
         }
-    }//GEN-LAST:event_LoginBtnActionPerformed
-
+    }
+    
     public static void main(String[] args) {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
@@ -241,8 +267,8 @@ public class Login extends javax.swing.JFrame {
     private javax.swing.JPanel Left;
     private javax.swing.JButton LoginBtn;
     private javax.swing.JPanel Right;
+    private javax.swing.JButton SignUpBtn;
     private javax.swing.JTextField email;
-    private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;

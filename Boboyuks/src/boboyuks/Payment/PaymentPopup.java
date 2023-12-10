@@ -4,7 +4,9 @@
  */
 package boboyuks.Payment;
 
+import java.text.NumberFormat;
 import java.util.List;
+import java.util.Locale;
 import java.util.Random;
 import javax.swing.JOptionPane;
 
@@ -21,6 +23,8 @@ public class PaymentPopup extends javax.swing.JFrame {
      */
     public PaymentPopup() {
         initComponents();
+        
+//        textTotalPrice.setText();
     }
 
     PaymentPopup(String bankName, String virtualAccountNumber, Payment paymentInstance) {
@@ -83,7 +87,7 @@ public class PaymentPopup extends javax.swing.JFrame {
         jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         choosenBank = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
+        textTotalPrice = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         numberVA = new javax.swing.JLabel();
         finishBtn = new javax.swing.JButton();
@@ -98,8 +102,8 @@ public class PaymentPopup extends javax.swing.JFrame {
         choosenBank.setFont(new java.awt.Font("Eras Medium ITC", 0, 35)); // NOI18N
         choosenBank.setText("Bank Virtual Account");
 
-        jLabel3.setFont(new java.awt.Font("Eras Bold ITC", 1, 35)); // NOI18N
-        jLabel3.setText("Rp. 620.293");
+        textTotalPrice.setFont(new java.awt.Font("Eras Bold ITC", 1, 35)); // NOI18N
+        textTotalPrice.setText(storage.SessionStorage.bookedHotelData.get("totalPriceStr"));
 
         jLabel4.setFont(new java.awt.Font("Eras Medium ITC", 0, 35)); // NOI18N
         jLabel4.setText("Total Price");
@@ -132,7 +136,7 @@ public class PaymentPopup extends javax.swing.JFrame {
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGap(14, 14, 14)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel3)
+                            .addComponent(textTotalPrice)
                             .addComponent(jLabel4)))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGap(148, 148, 148)
@@ -154,7 +158,7 @@ public class PaymentPopup extends javax.swing.JFrame {
                 .addGap(47, 47, 47)
                 .addComponent(jLabel4)
                 .addGap(18, 18, 18)
-                .addComponent(jLabel3)
+                .addComponent(textTotalPrice)
                 .addGap(100, 100, 100)
                 .addComponent(finishBtn)
                 .addContainerGap(134, Short.MAX_VALUE))
@@ -221,10 +225,10 @@ public class PaymentPopup extends javax.swing.JFrame {
     private javax.swing.JLabel choosenBank;
     private javax.swing.JButton finishBtn;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JLabel numberVA;
+    private javax.swing.JLabel textTotalPrice;
     // End of variables declaration//GEN-END:variables
 
 }

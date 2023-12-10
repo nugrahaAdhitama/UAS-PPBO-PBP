@@ -15,6 +15,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.PreparedStatement;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 
@@ -45,7 +46,7 @@ public class Payment extends javax.swing.JFrame {
     private static final String DB_USER = "root";
     private static final String DB_PASSWORD = "";
     
-    private Connection connection;
+    private Connection connection = boboyuks.Database.DBConnect.connection;
     
     /**
      * Creates new form Payment
@@ -60,12 +61,12 @@ public class Payment extends javax.swing.JFrame {
         DateOfStay.setText(guestCheckInDate);
         DurationStayText.setText(durationStay);
 
-        try {
-            connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            // Handle the connection error
-        }
+//        try {
+//            connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//            // Handle the connection error
+//        }
     }
     
     public void startTimer() {
@@ -99,7 +100,7 @@ public class Payment extends javax.swing.JFrame {
             
             private void handlePaymentTimeout() {
                 try {
-                    connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+//                    connection = boboyuks.Database.DBConnect.connection;
 
                     String idReservation = getBookingIDCode();
 
@@ -175,7 +176,8 @@ public class Payment extends javax.swing.JFrame {
     
     public void handlePaymentPaid(String idReservation, String idPayment) {
                 try {
-                        connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+//                        connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+//                        connection = boboyuks.Database.DBConnect.connection;
 
                         String insertQuery = "INSERT INTO payment (id_payment, id_reservation, status, timestamp) VALUES (?, ?, 'paid', NOW())";
                         try (PreparedStatement preparedStatement = connection.prepareStatement(insertQuery)) {
@@ -602,6 +604,7 @@ Payment getPaymentInstance() {
             paymentPopup.pack();
         } else {
             System.out.println("Please select a bank first.");
+            JOptionPane.showMessageDialog(new JFrame(), "Please select a bank first.", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_fixPaymentActionPerformed
 

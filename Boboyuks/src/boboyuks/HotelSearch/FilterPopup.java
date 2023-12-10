@@ -4,6 +4,9 @@
  */
 package boboyuks.HotelSearch;
 
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+
 /**
  *
  * @author Nugraha Adhitama
@@ -15,6 +18,19 @@ public class FilterPopup extends javax.swing.JFrame {
      */
     public FilterPopup() {
         initComponents();
+        
+        activateFilters();
+    }
+    
+    public void activateFilters() {
+        storage.SessionStorage.isAppliedFacilityFilters = true;
+        
+        filterWifi.setSelected(storage.SessionStorage.appliedFacilityFilters.get("wifi") == 1);
+        filterPool.setSelected(storage.SessionStorage.appliedFacilityFilters.get("pool") == 1);
+        filterRestaurant.setSelected(storage.SessionStorage.appliedFacilityFilters.get("restaurant") == 1);
+        filterGym.setSelected(storage.SessionStorage.appliedFacilityFilters.get("gym") == 1);
+        filterMeetingRoom.setSelected(storage.SessionStorage.appliedFacilityFilters.get("meetingRoom") == 1);
+        filterMeetingHall.setSelected(storage.SessionStorage.appliedFacilityFilters.get("meetingHall") == 1);
     }
 
     /**
@@ -27,57 +43,73 @@ public class FilterPopup extends javax.swing.JFrame {
     private void initComponents() {
 
         jPanel1 = new javax.swing.JPanel();
-        jCheckBox3 = new javax.swing.JCheckBox();
-        jCheckBox4 = new javax.swing.JCheckBox();
-        jCheckBox5 = new javax.swing.JCheckBox();
+        filterMeetingRoom = new javax.swing.JCheckBox();
+        filterMeetingHall = new javax.swing.JCheckBox();
+        filterGym = new javax.swing.JCheckBox();
         jLabel8 = new javax.swing.JLabel();
-        jCheckBox1 = new javax.swing.JCheckBox();
-        jCheckBox2 = new javax.swing.JCheckBox();
+        filterRestaurant = new javax.swing.JCheckBox();
+        filterWifi = new javax.swing.JCheckBox();
+        filterPool = new javax.swing.JCheckBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         jPanel1.setBackground(new java.awt.Color(220, 240, 255));
 
-        jCheckBox3.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
-        jCheckBox3.setText("Meeting Room");
-        jCheckBox3.addActionListener(new java.awt.event.ActionListener() {
+        filterMeetingRoom.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
+        filterMeetingRoom.setText("Meeting Room");
+        filterMeetingRoom.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jCheckBox3ActionPerformed(evt);
+                filterMeetingRoomActionPerformed(evt);
             }
         });
 
-        jCheckBox4.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
-        jCheckBox4.setText("Meeting Hall/Ballroom");
-        jCheckBox4.addActionListener(new java.awt.event.ActionListener() {
+        filterMeetingHall.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
+        filterMeetingHall.setText("Meeting Hall/Ballroom");
+        filterMeetingHall.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jCheckBox4ActionPerformed(evt);
+                filterMeetingHallActionPerformed(evt);
             }
         });
 
-        jCheckBox5.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
-        jCheckBox5.setText("Gym");
-        jCheckBox5.addActionListener(new java.awt.event.ActionListener() {
+        filterGym.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
+        filterGym.setText("Gym");
+        filterGym.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jCheckBox5ActionPerformed(evt);
+                filterGymActionPerformed(evt);
             }
         });
 
         jLabel8.setFont(new java.awt.Font("Eras Bold ITC", 1, 24)); // NOI18N
         jLabel8.setText("Search Filter by Facilities");
-
-        jCheckBox1.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
-        jCheckBox1.setText("Restaurant");
-        jCheckBox1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jCheckBox1ActionPerformed(evt);
+        setDefaultCloseOperation(javax.swing.WindowConstants.HIDE_ON_CLOSE);
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                onWindowClosing();
             }
         });
 
-        jCheckBox2.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
-        jCheckBox2.setText("Pool");
-        jCheckBox2.addActionListener(new java.awt.event.ActionListener() {
+        filterRestaurant.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
+        filterRestaurant.setText("Restaurant");
+        filterRestaurant.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jCheckBox2ActionPerformed(evt);
+                filterRestaurantActionPerformed(evt);
+            }
+        });
+
+        filterWifi.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
+        filterWifi.setText("Wifi");
+        filterWifi.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                filterWifiActionPerformed(evt);
+            }
+        });
+
+        filterPool.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
+        filterPool.setText("Pool");
+        filterPool.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                filterPoolActionPerformed(evt);
             }
         });
 
@@ -88,12 +120,13 @@ public class FilterPopup extends javax.swing.JFrame {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGap(27, 27, 27)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jCheckBox4)
-                    .addComponent(jCheckBox2)
+                    .addComponent(filterMeetingHall)
+                    .addComponent(filterWifi)
                     .addComponent(jLabel8)
-                    .addComponent(jCheckBox1)
-                    .addComponent(jCheckBox5)
-                    .addComponent(jCheckBox3))
+                    .addComponent(filterRestaurant)
+                    .addComponent(filterGym)
+                    .addComponent(filterMeetingRoom)
+                    .addComponent(filterPool))
                 .addContainerGap(250, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
@@ -101,17 +134,19 @@ public class FilterPopup extends javax.swing.JFrame {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGap(19, 19, 19)
                 .addComponent(jLabel8)
-                .addGap(39, 39, 39)
-                .addComponent(jCheckBox2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 27, Short.MAX_VALUE)
+                .addComponent(filterWifi)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 27, Short.MAX_VALUE)
+                .addComponent(filterPool)
                 .addGap(18, 18, 18)
-                .addComponent(jCheckBox1)
+                .addComponent(filterRestaurant)
                 .addGap(18, 18, 18)
-                .addComponent(jCheckBox5)
+                .addComponent(filterGym)
                 .addGap(18, 18, 18)
-                .addComponent(jCheckBox3)
+                .addComponent(filterMeetingRoom)
                 .addGap(18, 18, 18)
-                .addComponent(jCheckBox4)
-                .addContainerGap(82, Short.MAX_VALUE))
+                .addComponent(filterMeetingHall)
+                .addGap(31, 31, 31))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -128,26 +163,42 @@ public class FilterPopup extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jCheckBox3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBox3ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jCheckBox3ActionPerformed
+    private void filterMeetingRoomActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_filterMeetingRoomActionPerformed
+        storeActiveFilter("meetingRoom");
+    }//GEN-LAST:event_filterMeetingRoomActionPerformed
 
-    private void jCheckBox4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBox4ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jCheckBox4ActionPerformed
+    private void filterMeetingHallActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_filterMeetingHallActionPerformed
+        storeActiveFilter("meetingHall");
+    }//GEN-LAST:event_filterMeetingHallActionPerformed
 
-    private void jCheckBox5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBox5ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jCheckBox5ActionPerformed
+    private void filterGymActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_filterGymActionPerformed
+        storeActiveFilter("gym");
+    }//GEN-LAST:event_filterGymActionPerformed
 
-    private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBox1ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jCheckBox1ActionPerformed
+    private void filterRestaurantActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_filterRestaurantActionPerformed
+        storeActiveFilter("restaurant");
+    }//GEN-LAST:event_filterRestaurantActionPerformed
 
-    private void jCheckBox2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBox2ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jCheckBox2ActionPerformed
+    private void filterWifiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_filterWifiActionPerformed
+        storeActiveFilter("wifi");
+    }//GEN-LAST:event_filterWifiActionPerformed
 
+    private void filterPoolActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_filterPoolActionPerformed
+        storeActiveFilter("pool");
+    }//GEN-LAST:event_filterPoolActionPerformed
+
+    private void storeActiveFilter(String name) {
+        int setActive = storage.SessionStorage.appliedFacilityFilters.get(name) == 1 ? 0 : 1;
+        storage.SessionStorage.appliedFacilityFilters.put(name, setActive);
+    }
+    
+    private void onWindowClosing() {
+        setVisible(false);
+        
+        boboyuks.HotelSearch.HotelSearch hotelSearch = new boboyuks.HotelSearch.HotelSearch();
+        hotelSearch.setVisible(true);
+    }
+    
     /**
      * @param args the command line arguments
      */
@@ -184,11 +235,12 @@ public class FilterPopup extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JCheckBox jCheckBox1;
-    private javax.swing.JCheckBox jCheckBox2;
-    private javax.swing.JCheckBox jCheckBox3;
-    private javax.swing.JCheckBox jCheckBox4;
-    private javax.swing.JCheckBox jCheckBox5;
+    private javax.swing.JCheckBox filterGym;
+    private javax.swing.JCheckBox filterMeetingHall;
+    private javax.swing.JCheckBox filterMeetingRoom;
+    private javax.swing.JCheckBox filterPool;
+    private javax.swing.JCheckBox filterRestaurant;
+    private javax.swing.JCheckBox filterWifi;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JPanel jPanel1;
     // End of variables declaration//GEN-END:variables

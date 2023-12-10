@@ -1,20 +1,78 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
- */
 package boboyuks.Profile;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 
 /**
  *
  * @author Nugraha Adhitama
  */
 public class Profile extends javax.swing.JFrame {
+    
+    private JPopupMenu dropdownMenu;
 
     /**
      * Creates new form Profile
      */
     public Profile() {
         initComponents();
+        
+        addNavbarAction();
+        
+        java.sql.Statement st = new boboyuks.Database.DBConnect().getStatement();
+        
+        String query = "SELECT full_name, email, phone_number FROM user WHERE id_user = '" + storage.SessionStorage.getUserId() + "'";
+        
+        try {
+            java.sql.ResultSet rs = st.executeQuery(query);
+            if (rs.next()) {
+                FieldNama.setText(rs.getString("full_name"));
+                FieldEmail.setText(rs.getString("email"));
+                FieldPhoneNumber.setText(rs.getString("phone_number"));
+            }
+        } catch (Exception e) {
+            System.out.println("Error!" + e.getMessage());
+        }
+        
+    }
+    
+     private void addNavbarAction() {
+        dropdownMenu = new JPopupMenu();
+        JMenuItem profileMenuItem = new JMenuItem("Profile");
+        JMenuItem logoutMenuItem = new JMenuItem("Log Out");
+        
+        profileMenuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                goToProfile();
+            }
+        });
+        
+        logoutMenuItem.addActionListener(new ActionListener() {
+           @Override
+           public void actionPerformed(ActionEvent e) {
+               goToLogout();
+           }
+        });
+        
+        dropdownMenu.add(profileMenuItem);
+        dropdownMenu.add(logoutMenuItem);
+    }
+    
+    private void goToProfile() {
+        Profile profile = new Profile();
+        profile.setVisible(true);
+        this.dispose();
+    }
+    
+    private void goToLogout() {
+        storage.SessionStorage.setLoginStatus(false);
+        boboyuks.Authentication.LoginPage.Login login = new boboyuks.Authentication.LoginPage.Login();
+        login.setVisible(true);
+        
+        this.dispose();
     }
 
     /**
@@ -32,14 +90,14 @@ public class Profile extends javax.swing.JFrame {
         jLabel5 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
         jLabel7 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
-        jTextField2 = new javax.swing.JTextField();
-        jTextField3 = new javax.swing.JTextField();
+        FieldNama = new javax.swing.JTextField();
+        FieldEmail = new javax.swing.JTextField();
+        FieldPhoneNumber = new javax.swing.JTextField();
         jPanel2 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
-        jButton1 = new javax.swing.JButton();
+        ButtonMyOrder = new javax.swing.JLabel();
+        ButtonMyAccount = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -55,22 +113,22 @@ public class Profile extends javax.swing.JFrame {
         jLabel7.setFont(new java.awt.Font("Eras Medium ITC", 1, 24)); // NOI18N
         jLabel7.setText("Email                  : ");
 
-        jTextField1.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
-        jTextField1.setText("Nama user dr db");
+        FieldNama.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
+        FieldNama.setText("Nama user dr db");
 
-        jTextField2.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
-        jTextField2.setText("Email dr db");
-        jTextField2.addActionListener(new java.awt.event.ActionListener() {
+        FieldEmail.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
+        FieldEmail.setText("Email dr db");
+        FieldEmail.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jTextField2ActionPerformed(evt);
+                FieldEmailActionPerformed(evt);
             }
         });
 
-        jTextField3.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
-        jTextField3.setText("Number dr db");
-        jTextField3.addActionListener(new java.awt.event.ActionListener() {
+        FieldPhoneNumber.setFont(new java.awt.Font("Eras Medium ITC", 0, 24)); // NOI18N
+        FieldPhoneNumber.setText("Number dr db");
+        FieldPhoneNumber.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jTextField3ActionPerformed(evt);
+                FieldPhoneNumberActionPerformed(evt);
             }
         });
 
@@ -79,19 +137,34 @@ public class Profile extends javax.swing.JFrame {
         jLabel1.setFont(new java.awt.Font("Eras Bold ITC", 1, 47)); // NOI18N
         jLabel1.setForeground(new java.awt.Color(255, 255, 255));
         jLabel1.setText("BOBOYUKS");
+        jLabel1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jLabel1MouseClicked(evt);
+            }
+        });
 
         jLabel2.setFont(new java.awt.Font("Segoe UI", 0, 28)); // NOI18N
         jLabel2.setForeground(new java.awt.Color(255, 255, 255));
         jLabel2.setText("Inbox");
 
-        jLabel3.setFont(new java.awt.Font("Segoe UI", 0, 28)); // NOI18N
-        jLabel3.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel3.setText("My Order");
+        ButtonMyOrder.setFont(new java.awt.Font("Segoe UI", 0, 28)); // NOI18N
+        ButtonMyOrder.setForeground(new java.awt.Color(255, 255, 255));
+        ButtonMyOrder.setText("My Order");
+        ButtonMyOrder.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                ButtonMyOrderMouseClicked(evt);
+            }
+        });
 
-        jButton1.setBackground(new java.awt.Color(89, 185, 255));
-        jButton1.setFont(new java.awt.Font("Segoe UI", 0, 28)); // NOI18N
-        jButton1.setForeground(new java.awt.Color(255, 255, 255));
-        jButton1.setText("My Account");
+        ButtonMyAccount.setBackground(new java.awt.Color(89, 185, 255));
+        ButtonMyAccount.setFont(new java.awt.Font("Segoe UI", 0, 28)); // NOI18N
+        ButtonMyAccount.setForeground(new java.awt.Color(255, 255, 255));
+        ButtonMyAccount.setText("My Account");
+        ButtonMyAccount.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ButtonMyAccountActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -103,9 +176,9 @@ public class Profile extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 252, Short.MAX_VALUE)
                 .addComponent(jLabel2)
                 .addGap(52, 52, 52)
-                .addComponent(jLabel3)
+                .addComponent(ButtonMyOrder)
                 .addGap(58, 58, 58)
-                .addComponent(jButton1)
+                .addComponent(ButtonMyAccount)
                 .addGap(46, 46, 46))
         );
         jPanel2Layout.setVerticalGroup(
@@ -115,8 +188,8 @@ public class Profile extends javax.swing.JFrame {
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(jLabel2)
-                        .addComponent(jLabel3)
-                        .addComponent(jButton1))
+                        .addComponent(ButtonMyOrder)
+                        .addComponent(ButtonMyAccount))
                     .addComponent(jLabel1))
                 .addContainerGap(37, Short.MAX_VALUE))
         );
@@ -125,9 +198,9 @@ public class Profile extends javax.swing.JFrame {
         jLayeredPane1.setLayer(jLabel5, javax.swing.JLayeredPane.DEFAULT_LAYER);
         jLayeredPane1.setLayer(jLabel6, javax.swing.JLayeredPane.DEFAULT_LAYER);
         jLayeredPane1.setLayer(jLabel7, javax.swing.JLayeredPane.DEFAULT_LAYER);
-        jLayeredPane1.setLayer(jTextField1, javax.swing.JLayeredPane.DEFAULT_LAYER);
-        jLayeredPane1.setLayer(jTextField2, javax.swing.JLayeredPane.DEFAULT_LAYER);
-        jLayeredPane1.setLayer(jTextField3, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        jLayeredPane1.setLayer(FieldNama, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        jLayeredPane1.setLayer(FieldEmail, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        jLayeredPane1.setLayer(FieldPhoneNumber, javax.swing.JLayeredPane.DEFAULT_LAYER);
         jLayeredPane1.setLayer(jPanel2, javax.swing.JLayeredPane.DEFAULT_LAYER);
 
         javax.swing.GroupLayout jLayeredPane1Layout = new javax.swing.GroupLayout(jLayeredPane1);
@@ -147,17 +220,13 @@ public class Profile extends javax.swing.JFrame {
                                 .addGroup(jLayeredPane1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(jLabel7)
                                     .addComponent(jLabel4)))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jLayeredPane1Layout.createSequentialGroup()
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jLabel6)))
+                            .addComponent(jLabel6, javax.swing.GroupLayout.Alignment.TRAILING))
                         .addGap(18, 18, 18)
                         .addGroup(jLayeredPane1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 380, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, 380, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, 380, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addGroup(jLayeredPane1Layout.createSequentialGroup()
-                        .addComponent(jLabel5)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 348, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addComponent(FieldNama, javax.swing.GroupLayout.PREFERRED_SIZE, 380, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(FieldPhoneNumber, javax.swing.GroupLayout.PREFERRED_SIZE, 380, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(FieldEmail, javax.swing.GroupLayout.PREFERRED_SIZE, 380, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(jLabel5))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jLayeredPane1Layout.setVerticalGroup(
@@ -168,16 +237,16 @@ public class Profile extends javax.swing.JFrame {
                 .addComponent(jLabel5)
                 .addGap(61, 61, 61)
                 .addGroup(jLayeredPane1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(FieldNama, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel6))
                 .addGap(28, 28, 28)
                 .addGroup(jLayeredPane1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel7, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jTextField2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(FieldEmail, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(36, 36, 36)
                 .addGroup(jLayeredPane1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel4)
-                    .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(FieldPhoneNumber, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(697, Short.MAX_VALUE))
         );
 
@@ -197,13 +266,29 @@ public class Profile extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jTextField2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField2ActionPerformed
+    private void FieldEmailActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_FieldEmailActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_jTextField2ActionPerformed
+    }//GEN-LAST:event_FieldEmailActionPerformed
 
-    private void jTextField3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField3ActionPerformed
+    private void FieldPhoneNumberActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_FieldPhoneNumberActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_jTextField3ActionPerformed
+    }//GEN-LAST:event_FieldPhoneNumberActionPerformed
+
+    private void ButtonMyAccountActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ButtonMyAccountActionPerformed
+        dropdownMenu.show(ButtonMyAccount, 0, ButtonMyAccount.getHeight());
+    }//GEN-LAST:event_ButtonMyAccountActionPerformed
+
+    private void jLabel1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel1MouseClicked
+        boboyuks.Home.Home home = new boboyuks.Home.Home();
+        home.setVisible(true);
+        this.dispose();
+    }//GEN-LAST:event_jLabel1MouseClicked
+
+    private void ButtonMyOrderMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ButtonMyOrderMouseClicked
+        boboyuks.Order.MyOrder myOrder = new boboyuks.Order.MyOrder();
+        myOrder.setVisible(true);
+        this.dispose();
+    }//GEN-LAST:event_ButtonMyOrderMouseClicked
 
     /**
      * @param args the command line arguments
@@ -241,10 +326,13 @@ public class Profile extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
+    private javax.swing.JButton ButtonMyAccount;
+    private javax.swing.JLabel ButtonMyOrder;
+    private javax.swing.JTextField FieldEmail;
+    private javax.swing.JTextField FieldNama;
+    private javax.swing.JTextField FieldPhoneNumber;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
@@ -252,8 +340,5 @@ public class Profile extends javax.swing.JFrame {
     private javax.swing.JLayeredPane jLayeredPane1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTextField jTextField1;
-    private javax.swing.JTextField jTextField2;
-    private javax.swing.JTextField jTextField3;
     // End of variables declaration//GEN-END:variables
 }

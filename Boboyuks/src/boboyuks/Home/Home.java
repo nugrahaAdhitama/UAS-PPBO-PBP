@@ -1,8 +1,14 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
- */
 package boboyuks.Home;
+
+import boboyuks.Profile.Profile;
+import javax.swing.*;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 /**
  *
@@ -15,6 +21,118 @@ public class Home extends javax.swing.JFrame {
      */
     public Home() {
         initComponents();
+        
+        fieldSearchLocation.requestFocusInWindow();
+        
+        // template header
+        addNavbarAction();
+        
+        // duration listener
+        fieldSearchDuration.getDocument().addDocumentListener(new DocumentListener() {
+            public void changedUpdate(DocumentEvent e) {
+              updateDateField();
+            }
+            public void removeUpdate(DocumentEvent e) {
+              updateDateField();
+            }
+            public void insertUpdate(DocumentEvent e) {
+              updateDateField();
+            }
+          });
+        
+        initCheckinDate();
+    }
+    
+    // init checkin date onstart
+    public void initCheckinDate() {
+        Calendar now = Calendar.getInstance();
+        fieldSearchCheckin.setCalendar(now);
+        
+        fieldSearchGuest.setText("1");
+        fieldSearchRoom.setText("1");
+        updateDateField();
+    }
+    
+    // update checkout date
+    private JPopupMenu dropdownMenu;
+    public void updateDateField() {
+        String checkoutDate = "";
+        String durationInput = fieldSearchDuration.getText();
+        String guestPerRoomInput = fieldSearchGuest.getText();
+        String roomInput = fieldSearchRoom.getText();
+        
+        if ("".equals(guestPerRoomInput) || "".equals(roomInput)) {
+            guestPerRoomInput = "1";
+            roomInput = "1";
+        }
+
+        try {
+            if ("".equals(durationInput)) {
+                fieldSearchDuration.setText("1");
+            } else if (Integer.parseInt(durationInput) >= 1){
+                Date checkinDate = fieldSearchCheckin.getDate();
+
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(checkinDate);
+                calendar.add(Calendar.DAY_OF_MONTH, Integer.parseInt(fieldSearchDuration.getText()));
+                Date newDate = calendar.getTime();
+
+                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+                checkoutDate = format.format(newDate);
+
+                calendar.setTime(format.parse(checkoutDate));
+                fieldSearchCheckout.setCalendar(calendar);
+                
+                storage.SessionStorage.bookedHotelData.put("checkin_date", format.format(checkinDate));
+                storage.SessionStorage.bookedHotelData.put("checkout_date", checkoutDate);
+                storage.SessionStorage.bookedHotelData.put("duration", durationInput);
+                storage.SessionStorage.bookedHotelData.put("guest_per_room", guestPerRoomInput);
+                storage.SessionStorage.bookedHotelData.put("room_amount", roomInput);
+           } else {
+                fieldSearchDuration.setText("1");
+            }
+        } catch (Exception e) {
+            storage.SessionStorage.bookedHotelData.put("duration", "1");
+            return;
+        }
+    }
+    
+    // Dropdown actions
+    private void addNavbarAction() {
+        dropdownMenu = new JPopupMenu();
+        JMenuItem profileMenuItem = new JMenuItem("Profile");
+        JMenuItem logoutMenuItem = new JMenuItem("Log Out");
+        
+        profileMenuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                goToProfile();
+            }
+        });
+        
+        logoutMenuItem.addActionListener(new ActionListener() {
+           @Override
+           public void actionPerformed(ActionEvent e) {
+               goToLogout();
+           }
+        });
+        
+        dropdownMenu.add(profileMenuItem);
+        dropdownMenu.add(logoutMenuItem);
+    }
+    
+    private void goToProfile() {
+        Profile profile = new Profile();
+        profile.setVisible(true);
+        this.dispose();
+    }
+    
+    private void goToLogout() {
+        storage.SessionStorage.setLoginStatus(false);
+        boboyuks.Authentication.LoginPage.Login login = new boboyuks.Authentication.LoginPage.Login();
+        login.setVisible(true);
+        
+        this.dispose();
     }
 
     /**
@@ -29,28 +147,28 @@ public class Home extends javax.swing.JFrame {
         jPanel4 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
-        jButton1 = new javax.swing.JButton();
+        ButtonIndex = new javax.swing.JLabel();
+        ButtonMyOrder = new javax.swing.JLabel();
+        ButtonMyAccount = new javax.swing.JButton();
         jLabel11 = new javax.swing.JLabel();
         jPanel5 = new javax.swing.JPanel();
         jPanel6 = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
         jLabel4 = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
-        jTextField1 = new javax.swing.JTextField();
-        jTextField2 = new javax.swing.JTextField();
-        jTextField3 = new javax.swing.JTextField();
-        jTextField4 = new javax.swing.JTextField();
-        jTextField5 = new javax.swing.JTextField();
-        jTextField6 = new javax.swing.JTextField();
+        fieldSearchLocation = new javax.swing.JTextField();
+        fieldSearchDuration = new javax.swing.JTextField();
+        fieldSearchGuest = new javax.swing.JTextField();
+        fieldSearchRoom = new javax.swing.JTextField();
         jLabel5 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
         jLabel7 = new javax.swing.JLabel();
         jLabel8 = new javax.swing.JLabel();
         jLabel9 = new javax.swing.JLabel();
         jLabel10 = new javax.swing.JLabel();
-        jButton7 = new javax.swing.JButton();
+        buttonSearch = new javax.swing.JButton();
+        fieldSearchCheckin = new com.toedter.calendar.JDateChooser();
+        fieldSearchCheckout = new com.toedter.calendar.JDateChooser();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -72,19 +190,39 @@ public class Home extends javax.swing.JFrame {
         jLabel1.setFont(new java.awt.Font("Eras Bold ITC", 1, 47)); // NOI18N
         jLabel1.setForeground(new java.awt.Color(255, 255, 255));
         jLabel1.setText("BOBOYUKS");
+        jLabel1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jLabel1MouseClicked(evt);
+            }
+        });
 
-        jLabel2.setFont(new java.awt.Font("Segoe UI", 0, 28)); // NOI18N
-        jLabel2.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel2.setText("Inbox");
+        ButtonIndex.setFont(new java.awt.Font("Segoe UI", 0, 28)); // NOI18N
+        ButtonIndex.setForeground(new java.awt.Color(255, 255, 255));
+        ButtonIndex.setText("Inbox");
+        ButtonIndex.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                ButtonIndexMouseClicked(evt);
+            }
+        });
 
-        jLabel3.setFont(new java.awt.Font("Segoe UI", 0, 28)); // NOI18N
-        jLabel3.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel3.setText("My Order");
+        ButtonMyOrder.setFont(new java.awt.Font("Segoe UI", 0, 28)); // NOI18N
+        ButtonMyOrder.setForeground(new java.awt.Color(255, 255, 255));
+        ButtonMyOrder.setText("My Order");
+        ButtonMyOrder.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                ButtonMyOrderMouseClicked(evt);
+            }
+        });
 
-        jButton1.setBackground(new java.awt.Color(89, 185, 255));
-        jButton1.setFont(new java.awt.Font("Segoe UI", 0, 28)); // NOI18N
-        jButton1.setForeground(new java.awt.Color(255, 255, 255));
-        jButton1.setText("My Account");
+        ButtonMyAccount.setBackground(new java.awt.Color(89, 185, 255));
+        ButtonMyAccount.setFont(new java.awt.Font("Segoe UI", 0, 28)); // NOI18N
+        ButtonMyAccount.setForeground(new java.awt.Color(255, 255, 255));
+        ButtonMyAccount.setText("My Account");
+        ButtonMyAccount.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ButtonMyAccountActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -93,12 +231,12 @@ public class Home extends javax.swing.JFrame {
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addGap(32, 32, 32)
                 .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 20, Short.MAX_VALUE)
-                .addComponent(jLabel2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(ButtonIndex)
                 .addGap(52, 52, 52)
-                .addComponent(jLabel3)
+                .addComponent(ButtonMyOrder)
                 .addGap(58, 58, 58)
-                .addComponent(jButton1)
+                .addComponent(ButtonMyAccount)
                 .addGap(46, 46, 46))
         );
         jPanel2Layout.setVerticalGroup(
@@ -107,9 +245,9 @@ public class Home extends javax.swing.JFrame {
                 .addGap(28, 28, 28)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(jLabel2)
-                        .addComponent(jLabel3)
-                        .addComponent(jButton1))
+                        .addComponent(ButtonIndex)
+                        .addComponent(ButtonMyOrder)
+                        .addComponent(ButtonMyAccount))
                     .addComponent(jLabel1))
                 .addContainerGap(37, Short.MAX_VALUE))
         );
@@ -161,15 +299,9 @@ public class Home extends javax.swing.JFrame {
 
         jPanel3.setBackground(new java.awt.Color(23, 97, 150));
 
-        jTextField1.setText("'input loc'");
+        fieldSearchDuration.setText("1");
 
-        jTextField2.setText("user input date");
-
-        jTextField3.setText("input jumlah malam");
-
-        jTextField4.setText("auto generate");
-
-        jTextField6.setText(" ");
+        fieldSearchRoom.setText(" ");
 
         jLabel5.setFont(new java.awt.Font("Eras Medium ITC", 0, 18)); // NOI18N
         jLabel5.setForeground(new java.awt.Color(255, 255, 255));
@@ -195,12 +327,12 @@ public class Home extends javax.swing.JFrame {
         jLabel10.setForeground(new java.awt.Color(255, 255, 255));
         jLabel10.setText("Room");
 
-        jButton7.setBackground(new java.awt.Color(89, 185, 255));
-        jButton7.setFont(new java.awt.Font("Eras Bold ITC", 1, 20)); // NOI18N
-        jButton7.setText("Search");
-        jButton7.addActionListener(new java.awt.event.ActionListener() {
+        buttonSearch.setBackground(new java.awt.Color(89, 185, 255));
+        buttonSearch.setFont(new java.awt.Font("Eras Bold ITC", 1, 20)); // NOI18N
+        buttonSearch.setText("Search");
+        buttonSearch.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton7ActionPerformed(evt);
+                buttonSearchActionPerformed(evt);
             }
         });
 
@@ -214,30 +346,37 @@ public class Home extends javax.swing.JFrame {
                     .addGroup(jPanel3Layout.createSequentialGroup()
                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addGroup(jPanel3Layout.createSequentialGroup()
+                                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addGroup(jPanel3Layout.createSequentialGroup()
+                                        .addComponent(jLabel6)
+                                        .addGap(135, 135, 135))
+                                    .addGroup(jPanel3Layout.createSequentialGroup()
+                                        .addComponent(fieldSearchCheckin, javax.swing.GroupLayout.PREFERRED_SIZE, 171, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGap(34, 34, 34)))
                                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, 171, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(jLabel6))
-                                .addGap(34, 34, 34)
-                                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, 171, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(fieldSearchDuration, javax.swing.GroupLayout.PREFERRED_SIZE, 171, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(jLabel7)))
                             .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel3Layout.createSequentialGroup()
                                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jTextField5, javax.swing.GroupLayout.PREFERRED_SIZE, 171, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(fieldSearchGuest, javax.swing.GroupLayout.PREFERRED_SIZE, 171, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(jLabel9))
                                 .addGap(34, 34, 34)
                                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(jLabel10)
-                                    .addComponent(jTextField6, javax.swing.GroupLayout.PREFERRED_SIZE, 171, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                                    .addComponent(fieldSearchRoom, javax.swing.GroupLayout.PREFERRED_SIZE, 171, javax.swing.GroupLayout.PREFERRED_SIZE))))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jButton7, javax.swing.GroupLayout.PREFERRED_SIZE, 188, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(buttonSearch, javax.swing.GroupLayout.PREFERRED_SIZE, 188, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel5)
-                            .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 586, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel8)
-                            .addComponent(jTextField4, javax.swing.GroupLayout.PREFERRED_SIZE, 188, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                            .addComponent(fieldSearchLocation, javax.swing.GroupLayout.PREFERRED_SIZE, 586, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(jPanel3Layout.createSequentialGroup()
+                            .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addGroup(jPanel3Layout.createSequentialGroup()
+                                    .addGap(6, 6, 6)
+                                    .addComponent(fieldSearchCheckout, javax.swing.GroupLayout.PREFERRED_SIZE, 171, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addComponent(jLabel8))
+                            .addGap(11, 11, 11))))
                 .addContainerGap(22, Short.MAX_VALUE))
         );
         jPanel3Layout.setVerticalGroup(
@@ -246,29 +385,30 @@ public class Home extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(jLabel5)
                 .addGap(5, 5, 5)
+                .addComponent(fieldSearchLocation, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, 21, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel8)
+                    .addComponent(jLabel6))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(fieldSearchDuration, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(fieldSearchCheckin, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(fieldSearchCheckout, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(35, 35, 35)
                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, 21, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel8)
-                            .addComponent(jLabel6))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jTextField4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jLabel9))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
-                        .addGap(115, 115, 115)
-                        .addComponent(jLabel10)
+                            .addComponent(jLabel10)
+                            .addComponent(jLabel9))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jTextField5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jTextField6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jButton7))
+                            .addComponent(fieldSearchGuest, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(fieldSearchRoom, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(buttonSearch))
                         .addGap(21, 21, 21))))
         );
 
@@ -319,9 +459,64 @@ public class Home extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jButton7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton7ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jButton7ActionPerformed
+    private void buttonSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonSearchActionPerformed
+        java.sql.Statement st = new boboyuks.Database.DBConnect().getStatement();
+        String searchQuery = fieldSearchLocation.getText();
+        
+        if ( "".equals(searchQuery) ) {
+            JOptionPane.showMessageDialog(new JFrame(), "Must specify location", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
+//        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+//        String checkinDate = format.format(fieldSearchCheckin.getDate());
+//        
+//        if ("".equals(checkinDate)) {
+//            checkinDate = java.time.LocalDate.now().toString();
+//        }
+//        
+//        String checkoutDate = fieldSearchCheckout.getText();
+        
+        String query = "SELECT * FROM filteredhotelview WHERE "
+                + "city LIKE '%" + searchQuery + "%' ";
+        
+        try {
+            java.sql.ResultSet rs = st.executeQuery(query);
+
+            storage.SessionStorage.setSearchQuery(searchQuery);
+            storage.SessionStorage.setHotelSearchResult(rs);
+            
+            storage.SessionStorage.searchData.put("guest", fieldSearchGuest.getText());
+            storage.SessionStorage.searchData.put("room", fieldSearchRoom.getText());
+            
+            boboyuks.HotelSearch.HotelSearch hotelSearch = new boboyuks.HotelSearch.HotelSearch();
+            hotelSearch.setVisible(true);
+            
+            this.dispose();
+        } catch (Exception e) {
+            System.out.println("Error!" + e.getMessage());
+        }
+    }//GEN-LAST:event_buttonSearchActionPerformed
+
+    private void ButtonMyAccountActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ButtonMyAccountActionPerformed
+        dropdownMenu.show(ButtonMyAccount, 0, ButtonMyAccount.getHeight());
+    }//GEN-LAST:event_ButtonMyAccountActionPerformed
+
+    private void jLabel1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel1MouseClicked
+        boboyuks.Home.Home home = new boboyuks.Home.Home();
+        home.setVisible(true);
+        this.dispose();
+    }//GEN-LAST:event_jLabel1MouseClicked
+
+    private void ButtonMyOrderMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ButtonMyOrderMouseClicked
+        boboyuks.Order.MyOrder order = new boboyuks.Order.MyOrder();
+        order.setVisible(true);
+        this.dispose();
+    }//GEN-LAST:event_ButtonMyOrderMouseClicked
+
+    private void ButtonIndexMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ButtonIndexMouseClicked
+        
+    }//GEN-LAST:event_ButtonIndexMouseClicked
 
     /**
      * @param args the command line arguments
@@ -359,13 +554,19 @@ public class Home extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton7;
+    private javax.swing.JLabel ButtonIndex;
+    public javax.swing.JButton ButtonMyAccount;
+    private javax.swing.JLabel ButtonMyOrder;
+    private javax.swing.JButton buttonSearch;
+    private com.toedter.calendar.JDateChooser fieldSearchCheckin;
+    private com.toedter.calendar.JDateChooser fieldSearchCheckout;
+    private javax.swing.JTextField fieldSearchDuration;
+    private javax.swing.JTextField fieldSearchGuest;
+    private javax.swing.JTextField fieldSearchLocation;
+    private javax.swing.JTextField fieldSearchRoom;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
@@ -378,11 +579,5 @@ public class Home extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
-    private javax.swing.JTextField jTextField1;
-    private javax.swing.JTextField jTextField2;
-    private javax.swing.JTextField jTextField3;
-    private javax.swing.JTextField jTextField4;
-    private javax.swing.JTextField jTextField5;
-    private javax.swing.JTextField jTextField6;
     // End of variables declaration//GEN-END:variables
 }
